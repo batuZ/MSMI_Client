@@ -85,19 +85,19 @@ public class MSMI_Backservice extends Service {
                 jsonObject.addProperty("identifier", channel.toString());
                 webSocket.send(jsonObject.toString());
 
-                jsonObject = new JsonObject();
-                jsonObject.addProperty("command", "subscribe");
-                channel = new JsonObject();
-                channel.addProperty("channel", GROUP);
-                jsonObject.addProperty("identifier", channel.toString());
-                webSocket.send(jsonObject.toString());
-
-                jsonObject = new JsonObject();
-                jsonObject.addProperty("command", "subscribe");
-                channel = new JsonObject();
-                channel.addProperty("channel", NOTIFICATION);
-                jsonObject.addProperty("identifier", channel.toString());
-                webSocket.send(jsonObject.toString());
+//                jsonObject = new JsonObject();
+//                jsonObject.addProperty("command", "subscribe");
+//                channel = new JsonObject();
+//                channel.addProperty("channel", GROUP);
+//                jsonObject.addProperty("identifier", channel.toString());
+//                webSocket.send(jsonObject.toString());
+//
+//                jsonObject = new JsonObject();
+//                jsonObject.addProperty("command", "subscribe");
+//                channel = new JsonObject();
+//                channel.addProperty("channel", NOTIFICATION);
+//                jsonObject.addProperty("identifier", channel.toString());
+//                webSocket.send(jsonObject.toString());
             }
 
             @Override
@@ -126,6 +126,7 @@ public class MSMI_Backservice extends Service {
                     else if (jsonObject.has("identifier")) {
                         String channel = new Gson().fromJson(jsonObject.get("identifier") + "", JsonObject.class).get("channel").getAsString();
                         JSONObject message = jsonObject.getJSONObject("message");
+                        // 分频道的意义：目前，单聊不需要回执，群聊和通知都要回执
                         switch (channel) {
                             case SINGLE:
                                 single_channel_message(message);

@@ -10,6 +10,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 public interface MSMI_Server {
     String API = "http://39.107.250.142:3000" ;
@@ -25,7 +26,7 @@ public interface MSMI_Server {
             .build()
             .create(MSMI_Server.class);
 
-    @POST("message")
-    Call<JsonObject> send_message(@Header("mstoken") String a);
+    @POST("message/single")
+    Call<JsonObject> send_message(@Header("msmi_token") String a, @Query("user_id") String b, @Query("content") String c);
 
 }
