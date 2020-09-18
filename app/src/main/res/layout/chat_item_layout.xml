@@ -11,17 +11,25 @@
         android:layout_margin="10dp"
         android:src="@mipmap/ic_launcher_round" />
 
-    <TextView
-        android:id="@+id/chat_content"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_marginBottom="5dp"
-        android:layout_weight="1"
-        android:padding="10dp"
-        android:textColor="#000"
-        android:background="@drawable/content_back"
-        android:textSize="15sp" />
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/chat_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/content_self_back"
+            android:padding="10dp"
+            android:text="fdsafdsa"
+            android:textColor="#000"
+            android:textSize="15sp" />
+    </RelativeLayout>
+
 
     <ImageView
         android:id="@+id/self"

@@ -1,10 +1,8 @@
 package cn.mapplay.msmi_client.msmi;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.google.gson.JsonObject;
@@ -31,50 +29,29 @@ public class MSMI {
     }
 
     public static void send_message(String tag_id, String tag_name, String tag_avatar, String text) {
-        // 找到对应的会话，没有就手动创建一个会话
-        Cursor session_curser = get_session_by_identifier(tag_id);
-        long s_id = session_curser.getLong(session_curser.getColumnIndex("_id"));
-        // 更新会话信息
-        if (s_id > 0) {
-            ContentValues session_values = new ContentValues();
-            session_values.put("_title", tag_name);
-            session_values.put("_sub_title", text);
-            session_values.put("_avatar", tag_avatar);
-            session_values.put("_update_time", new Date().getTime());
-            SQLiteDatabase db = MSMI_DB.helper(_context).getWritableDatabase();
-            int update_res = db.update(MSMI_DB.SESSION, session_values, "_id=?", new String[]{Long.toString(s_id)});
+        MSMI_Session session = new MSMI_Session(_context, tag_id);
+        session.title = tag_name;
+        session.sub_title = text;
+        session.avatar = tag_avatar;
+        session.update_time = new Date().getTime();
 
-            // 插入新的消息
-            if (update_res > 0) {
-                ContentValues values = new ContentValues();
-                values.put("_session_id", s_id);
-                values.put("_sender_id", _current_user.identifier);
-                values.put("_sender_name", _current_user.name);
-                values.put("_sender_avatar", _current_user.avatar);
-                values.put("_send_time", new Date().getTime());
-                values.put("_content_type", "text");
-                values.put("_content", text);
-                values.put("_preview", "");
-                long single_id = db.insert(MSMI_DB.SINGLE, null, values);
-                if (single_id > 0) {
-                    if (MSMI.getOnMessageChangedListener() != null) {
-                        MSMI.getOnMessageChangedListener().message_changed(tag_id);
-                    }
-                    if (MSMI.getOnSessionChangedListener() != null) {
-                        MSMI.getOnSessionChangedListener().session_changed();
-                    }
-                    Log.i(TAG, "single: 插入成功");
-                } else {
-                    Log.i(TAG, "single: 插入失败");
-                }
-            } else {
-                Log.i(TAG, "single: 会话更新失败");
+        MSMI_Single single = new MSMI_Single(session.id);
+        single.user = _current_user;
+        single.send_time = new Date().getTime();
+        single.content_type = "text";
+        single.content = text;
+
+        if(session.update() && single.save(_context)){
+            if (MSMI.getOnMessageChangedListener() != null) {
+                MSMI.getOnMessageChangedListener().message_changed(session.identifier);
             }
-            db.close();
+            if (MSMI.getOnSessionChangedListener() != null) {
+                MSMI.getOnSessionChangedListener().session_changed();
+            }
+            Log.i(TAG, "single: 插入成功");
         } else {
-            Log.i(TAG, "single: 没有找到会话");
+            Log.i(TAG, "single: 插入失败");
         }
-
 
         MSMI_Server.ser.send_message(_current_user.token, tag_id, text).enqueue(new Callback<JsonObject>() {
             @Override
@@ -94,28 +71,6 @@ public class MSMI {
         return MSMI_DB.helper(_context)
                 .getWritableDatabase()
                 .query(MSMI_DB.SESSION, null, null, null, null, null, "_update_time DESC");
-    }
-
-    public static Cursor get_session_by_id(long id) {
-        Cursor cursor = MSMI_DB.helper(_context)
-                .getWritableDatabase()
-                .query(MSMI_DB.SESSION, null, "_id=?", new String[]{id + ""}, null, null, null);
-        cursor.moveToFirst();
-        return cursor;
-    }
-
-    // 通过标识获取会话记录，如果没有就创建一个
-    public static Cursor get_session_by_identifier(String identifier) {
-        SQLiteDatabase db = MSMI_DB.helper(_context).getWritableDatabase();
-        Cursor cursor = db.query(MSMI_DB.SESSION, null, "_identifier=?", new String[]{identifier}, null, null, null);
-        if (cursor == null || cursor.getCount() == 0) {
-            ContentValues session_values = new ContentValues();
-            session_values.put("_identifier", identifier);
-            db.insert(MSMI_DB.SESSION, null, session_values);
-            cursor = db.query(MSMI_DB.SESSION, null, "_identifier=?", new String[]{identifier}, null, null, null);
-        }
-        cursor.moveToFirst();
-        return cursor;
     }
 
     public static Cursor get_message_by_session(String session_identifier) {

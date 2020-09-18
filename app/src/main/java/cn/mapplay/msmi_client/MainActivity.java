@@ -81,16 +81,21 @@ public class MainActivity extends AppCompatActivity {
 
     // 从应用服务器获取到的目标，创建一个新的会话
     private void create_session() {
-        String tag_identifier = "Daogelasi_JianGuo";
-        String tag_name = "道格拉斯·建国";
-        String tag_avatar = "https://images.12306.com/avatar/img_3617.jpg";
-        ChatActivity.show_by_user(this, tag_identifier, tag_name, tag_avatar);
+        MSMI_User user = new MSMI_User(
+                "Daogelasi_JianGuo",
+                "道格拉斯·建国",
+                "https://images.12306.com/avatar/img_3617.jpg",
+                null
+        );
+        ChatActivity.show_by_user(this, user);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        adapter.changeCursor(MSMI.message_list());
-        adapter.notifyDataSetChanged();
+        if(requestCode == ChatActivity.CHAT_FLAG){
+            adapter.changeCursor(MSMI.message_list());
+            adapter.notifyDataSetChanged();
+        }
     }
 }
