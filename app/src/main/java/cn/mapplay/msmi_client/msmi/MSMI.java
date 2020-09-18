@@ -17,19 +17,17 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MSMI {
+    public static MSMI_User _current_user;
+
     private static final String TAG = "MSMI_Backservice";
     private static Context _context;
-    private static String _token, _user_id, _user_name, _user_avatar;
     private static OnSessionChangedListener onSessionChangedListener;
     private static OnMessageChangedListener onMessageChangedListener;
 
-    public static void start_with_token(Context context, String token, String user_id, String user_name, String avatar) {
+    public static void start_with_user(Context context, MSMI_User user) {
         _context = context;
-        _token = token;
-        _user_id = user_id;
-        _user_name = user_name;
-        _user_avatar = avatar;
-        context.startService(new Intent(context, MSMI_Backservice.class).putExtra("token", token));
+        _current_user = user;
+        context.startService(new Intent(context, MSMI_Backservice.class).putExtra("token", user.token));
     }
 
     public static void send_message(String tag_id, String tag_name, String tag_avatar, String text) {
@@ -50,9 +48,9 @@ public class MSMI {
             if (update_res > 0) {
                 ContentValues values = new ContentValues();
                 values.put("_session_id", s_id);
-                values.put("_sender_id", _user_id);
-                values.put("_sender_name", _user_name);
-                values.put("_sender_avatar", _user_avatar);
+                values.put("_sender_id", _current_user.identifier);
+                values.put("_sender_name", _current_user.name);
+                values.put("_sender_avatar", _current_user.avatar);
                 values.put("_send_time", new Date().getTime());
                 values.put("_content_type", "text");
                 values.put("_content", text);
@@ -78,7 +76,7 @@ public class MSMI {
         }
 
 
-        MSMI_Server.ser.send_message(_token, tag_id, text).enqueue(new Callback<JsonObject>() {
+        MSMI_Server.ser.send_message(_current_user.token, tag_id, text).enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 if (success(response)) {
@@ -121,14 +119,14 @@ public class MSMI {
     }
 
     public static Cursor get_message_by_session(String session_identifier) {
-        Cursor cursor = MSMI_DB.helper(_context) .getWritableDatabase()
-                .rawQuery("SELECT * FROM single INNER JOIN session WHERE session._identifier=? AND single._session_id = session._id ORDER BY single._send_time ASC;",new String[]{session_identifier});
+        Cursor cursor = MSMI_DB.helper(_context).getWritableDatabase()
+                .rawQuery("SELECT * FROM single INNER JOIN session WHERE session._identifier=? AND single._session_id = session._id ORDER BY single._send_time ASC;", new String[]{session_identifier});
         cursor.moveToFirst();
         return cursor;
     }
 
-    public static void clear_sessions(){
-        MSMI_DB.helper(_context).getWritableDatabase().delete(MSMI_DB.SESSION,null,null);
+    public static void clear_sessions() {
+        MSMI_DB.helper(_context).getWritableDatabase().delete(MSMI_DB.SESSION, null, null);
     }
 
     public static void setOnSessionChangedListener(OnSessionChangedListener listener) {

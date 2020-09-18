@@ -11,15 +11,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import cn.mapplay.msmi_client.msmi.MSMI;
+import cn.mapplay.msmi_client.msmi.MSMI_User;
 
 public class MainActivity extends AppCompatActivity {
     private ListView listView;
     private MSMI_List_Adapter adapter;
-
-    private String user_id;
-    private String user_name;
-    private String user_avatar;
-    private String chat_token;
+    private MSMI_User current_user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +24,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // 登录后连接socket
-        if (login()) {
+        current_user = get_current_user();
+        if (current_user.token != null) {
             MSMI.setOnSessionChangedListener(new MSMI.OnSessionChangedListener() {
                 @Override
                 public void session_changed() {
@@ -35,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
                     adapter.notifyDataSetChanged();
                 }
             });
-            MSMI.start_with_token(this, chat_token, user_id, user_name, user_avatar);
+            MSMI.start_with_user(this, current_user);
         }
 
         // 把数库中的内容画在视图上
@@ -68,16 +66,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // 登录app-server，验证用户身份，获取用户信息
-    private boolean login() {
+    private MSMI_User get_current_user() {
         // id\name\avatar 由应用服务器维护
-        user_id = "Nigulash_ShuFen";
-        user_name = "尼古拉斯·淑芬";
-        user_avatar = "https://images.12306.com/avatar/img_9983.jpg";
         // chat_token是由应用服务器向mi服务器发送请求创建的
         // 请求：user --[get_token]--> app-server --[app_id,secrit_key,usr_id,name,avatar] mi-server
         // 返回: mi-server --[token]--> app-server --[save&return]--> user
-        chat_token = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiTmlndWxhc2hfU2h1RmVuIiwidXNlcl9uYW1lIjoi5bC85Y-k5ouJ5pavwrfmt5HoiqwiLCJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9pbWFnZXMuMTIzMDYuY29tL2F2YXRhci9pbWdfOTk4My5qcGciLCJhcHBfaWQiOiJtYXBwbGF5In0.lM8Jh9ntpgbWWCaTJKsuaMYQC7spfUbJ_FWtFg5Euvs";
-        return true;
+        return new MSMI_User(
+                "Nigulash_ShuFen",
+                "尼古拉斯·淑芬",
+                "https://images.12306.com/avatar/img_9983.jpg",
+                "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiTmlndWxhc2hfU2h1RmVuIiwidXNlcl9uYW1lIjoi5bC85Y-k5ouJ5pavwrfmt5HoiqwiLCJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9pbWFnZXMuMTIzMDYuY29tL2F2YXRhci9pbWdfOTk4My5qcGciLCJhcHBfaWQiOiJtYXBwbGF5In0.lM8Jh9ntpgbWWCaTJKsuaMYQC7spfUbJ_FWtFg5Euvs"
+        );
     }
 
     // 从应用服务器获取到的目标，创建一个新的会话
