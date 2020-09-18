@@ -38,8 +38,6 @@ public class MSMI_DB extends SQLiteOpenHelper {
         sBuffer.append("isChecked BOOLEAN);");
         db.execSQL(sBuffer.toString());
 
-        db.execSQL("PRAGMA foreign_keys=ON;");// 开启外键约束
-
         sBuffer = new StringBuffer();
         sBuffer.append("create table " + SINGLE + "(_id integer primary key autoincrement, ");
         sBuffer.append("_session_id integer,");
@@ -55,6 +53,13 @@ public class MSMI_DB extends SQLiteOpenHelper {
     }
 
     @Override
+    public void onConfigure(SQLiteDatabase db) {
+        super.onConfigure(db);
+        db.execSQL("PRAGMA foreign_keys = ON;");// 开启外键约束
+    }
+
+    @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
+
 }

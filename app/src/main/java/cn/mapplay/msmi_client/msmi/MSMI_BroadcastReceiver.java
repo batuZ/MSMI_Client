@@ -56,7 +56,7 @@ public class MSMI_BroadcastReceiver extends BroadcastReceiver {
                                 values.put("_sender_id", json.getString("sender_id"));
                                 values.put("_sender_name", json.getString("sender_name"));
                                 values.put("_sender_avatar", json.getString("sender_avatar"));
-                                values.put("_send_time", json.getString("send_time"));
+                                values.put("_send_time", json.getString("send_time")+"000");
                                 values.put("_content_type", json.getString("content_type"));
                                 values.put("_content", json.getString("content"));
                                 values.put("_preview", json.getString("preview"));

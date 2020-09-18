@@ -39,9 +39,9 @@ public class MSMI {
         // 更新会话信息
         if (s_id > 0) {
             ContentValues session_values = new ContentValues();
-            session_values.put("_title", tag_id);
+            session_values.put("_title", tag_name);
             session_values.put("_sub_title", text);
-            session_values.put("_avatar", "");
+            session_values.put("_avatar", tag_avatar);
             session_values.put("_update_time", new Date().getTime());
             SQLiteDatabase db = MSMI_DB.helper(_context).getWritableDatabase();
             int update_res = db.update(MSMI_DB.SESSION, session_values, "_id=?", new String[]{Long.toString(s_id)});
@@ -121,13 +121,15 @@ public class MSMI {
     }
 
     public static Cursor get_message_by_session(String session_identifier) {
-        Cursor cursor = MSMI_DB.helper(_context)
-                .getWritableDatabase()
-                .query(MSMI_DB.SINGLE, null, null, null, null, null, null);
+        Cursor cursor = MSMI_DB.helper(_context) .getWritableDatabase()
+                .rawQuery("SELECT * FROM single INNER JOIN session WHERE session._identifier=? AND single._session_id = session._id ORDER BY single._send_time ASC;",new String[]{session_identifier});
         cursor.moveToFirst();
         return cursor;
     }
 
+    public static void clear_sessions(){
+        MSMI_DB.helper(_context).getWritableDatabase().delete(MSMI_DB.SESSION,null,null);
+    }
 
     public static void setOnSessionChangedListener(OnSessionChangedListener listener) {
         onSessionChangedListener = listener;

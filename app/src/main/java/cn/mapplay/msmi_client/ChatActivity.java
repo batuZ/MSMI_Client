@@ -74,6 +74,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 MSMI.send_message(tag_id, tag_name, tag_avatar, editText.getText().toString());
+                editText.setText(null);
             }
         });
     }

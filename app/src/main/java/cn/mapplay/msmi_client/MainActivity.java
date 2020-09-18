@@ -56,6 +56,15 @@ public class MainActivity extends AppCompatActivity {
                 create_session();
             }
         });
+        TextView clear_btn = findViewById(R.id.clear_session_btn);
+        clear_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MSMI.clear_sessions();
+                adapter.changeCursor(MSMI.message_list());
+                adapter.notifyDataSetChanged();
+            }
+        });
     }
 
     // 登录app-server，验证用户身份，获取用户信息
