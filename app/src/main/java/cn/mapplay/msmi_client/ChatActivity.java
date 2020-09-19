@@ -25,6 +25,7 @@ public class ChatActivity extends AppCompatActivity {
     private ListView listView;
     private EditText editText;
     private TextView send_btn;
+    private TextView clear_btn;
     private MSMI_User tag_user;
     private MSMI_Chat_Adapter adapter;
 
@@ -55,6 +56,7 @@ public class ChatActivity extends AppCompatActivity {
         listView = findViewById(R.id.listview);
         editText = findViewById(R.id.edit_text);
         send_btn = findViewById(R.id.send_btn);
+        clear_btn = findViewById(R.id.clear_single_btn);
 
         // 接收传进来的参数
         tag_user = new MSMI_User(
@@ -90,7 +92,16 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        // 清空事件
+        clear_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MSMI.clear_messages(tag_user.identifier);
+                adapter.changeCursor(MSMI.single_list(tag_user.identifier));
+                adapter.notifyDataSetChanged();
+            }
+        });
         // 滚动到最后一条
-        listView.setSelection(adapter.getCount()-1);
+        listView.setSelection(adapter.getCount() - 1);
     }
 }

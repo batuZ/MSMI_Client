@@ -20,25 +20,30 @@ public class MSMI {
     private static OnSessionChangedListener onSessionChangedListener;
     private static OnMessageChangedListener onMessageChangedListener;
 
+    // 登录
     public static void start_with_user(Context context, MSMI_User user) {
         _context = context;
         MSMI_User.current_user = user;
         context.startService(new Intent(context, MSMI_Backservice.class).putExtra("token", user.token));
     }
 
+    // 发送消息
     public static void send_message(String tag_id, String tag_name, String tag_avatar, String text) {
+        // 更新session
         MSMI_Session session = new MSMI_Session(_context, tag_id);
         session.title = tag_name;
         session.sub_title = text;
         session.avatar = tag_avatar;
         session.update_time = new Date().getTime();
 
+        // 创建一条single记录，塞到库里
         MSMI_Single single = new MSMI_Single(session.id);
         single.user = MSMI_User.current_user;
         single.send_time = new Date().getTime();
         single.content_type = "text";
         single.content = text;
 
+        // 发起回调，刷UI
         if (session.update(_context) && single.save(_context)) {
             if (MSMI.getOnMessageChangedListener() != null) {
                 MSMI.getOnMessageChangedListener().message_changed(session.identifier);
@@ -51,6 +56,7 @@ public class MSMI {
             Log.i(TAG, "single: 插入失败");
         }
 
+        // 消息发送请求
         MSMI_Server.ser.send_message(MSMI_User.current_user.token, tag_id, text).enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
@@ -65,18 +71,29 @@ public class MSMI {
         });
     }
 
+    // 获取session列表
     public static Cursor session_list() {
         return MSMI_DB.helper(_context).getWritableDatabase()
                 .query(MSMI_DB.SESSION, null, null, null, null, null, "_update_time DESC");
     }
 
+    // 获取指定session中的消息列表
     public static Cursor single_list(String session_identifier) {
         return MSMI_DB.helper(_context).getWritableDatabase()
                 .rawQuery("SELECT * FROM single INNER JOIN session WHERE session._identifier=? AND single._session_id = session._id ORDER BY single._send_time ASC;", new String[]{session_identifier});
     }
 
+    // 清空session列表
     public static void clear_sessions() {
         MSMI_DB.helper(_context).getWritableDatabase().delete(MSMI_DB.SESSION, null, null);
+        MSMI_DB.helper(_context).getWritableDatabase().close();
+    }
+
+    // 清空session中的single列表
+    public static void clear_messages(String session_identifier){
+        MSMI_DB.helper(_context).getWritableDatabase()
+                .execSQL("DELETE FROM single WHERE _session_id IN (SELECT _id FROM session WHERE _identifier=?);",new String[]{session_identifier});
+        MSMI_DB.helper(_context).getWritableDatabase().close();
     }
 
     public static void setOnSessionChangedListener(OnSessionChangedListener listener) {

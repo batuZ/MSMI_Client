@@ -20,6 +20,19 @@
             android:text="title"
             android:textSize="18sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/clear_single_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/content_self_back"
+            android:padding="5dp"
+            android:textColor="#fff"
+            android:text="clear" />
+
     </RelativeLayout>
 
     <ListView
