@@ -33,6 +33,10 @@ import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 
+/**
+ * 长连接的后台监听、分类解析
+ * */
+
 public class MSMI_Backservice extends Service {
     private final String TAG = "MSMI_Backservice";
     private NotificationManager notificationManager;

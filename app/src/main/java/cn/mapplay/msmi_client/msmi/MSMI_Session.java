@@ -5,6 +5,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+/**
+ * 会话模型
+ * */
+
 public class MSMI_Session {
     public long id;
     public String identifier;

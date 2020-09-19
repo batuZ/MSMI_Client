@@ -6,6 +6,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.Nullable;
 
+/**
+ * 数据库
+ * */
+
 public class MSMI_DB extends SQLiteOpenHelper {
     public static String SESSION = "session";
     public static String SINGLE = "single";

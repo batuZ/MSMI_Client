@@ -7,6 +7,10 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 
+/**
+ * 接收后台消息，塞进数据库，并触刷新事件
+ * */
+
 public class MSMI_BroadcastReceiver extends BroadcastReceiver {
     private final String TAG = "MSMI_Backservice";
 

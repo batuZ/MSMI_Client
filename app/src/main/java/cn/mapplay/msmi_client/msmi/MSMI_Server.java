@@ -12,6 +12,10 @@ import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 
+/**
+ * 定义api和长连接
+ * */
+
 public interface MSMI_Server {
     String API = "http://39.107.250.142:3000" ;
     String WS = "ws://39.107.250.142:3000/cable";

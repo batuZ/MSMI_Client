@@ -4,7 +4,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-
+/**
+ * 消息模型
+ * */
 public class MSMI_Single {
     public long id;
     public long session_id;

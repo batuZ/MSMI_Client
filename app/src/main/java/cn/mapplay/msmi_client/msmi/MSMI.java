@@ -14,6 +14,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * 主入口
+ * */
+
 public class MSMI {
     private static final String TAG = "MSMI_Backservice";
     private static Context _context;

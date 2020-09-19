@@ -1,6 +1,8 @@
 package cn.mapplay.msmi_client.msmi;
 
-import android.database.Cursor;
+/**
+ * 用户模型，当前用户就放在这里
+ * */
 
 public class MSMI_User {
     public static MSMI_User current_user;
@@ -8,18 +10,6 @@ public class MSMI_User {
     public String name;
     public String avatar;
     public String token;
-
-    public MSMI_User() {
-    }
-
-    public MSMI_User(Cursor cursor) {
-        this(
-                cursor.getString(cursor.getColumnIndex("_sender_id")),
-                cursor.getString(cursor.getColumnIndex("_sender_name")),
-                cursor.getString(cursor.getColumnIndex("_sender_avatar")),
-                null
-        );
-    }
 
     public MSMI_User(String identifier, String name, String avatar, String token) {
         this.identifier = identifier;
