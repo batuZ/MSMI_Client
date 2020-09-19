@@ -15,8 +15,7 @@ import cn.mapplay.msmi_client.msmi.MSMI_User;
 
 public class MainActivity extends AppCompatActivity {
     private ListView listView;
-    private MSMI_List_Adapter adapter;
-    private MSMI_User current_user;
+    private MSMI_Session_Adapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,21 +23,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // 登录后连接socket
-        current_user = get_current_user();
-        if (current_user.token != null) {
+        MSMI_User.current_user = get_current_user();
+        if ( MSMI_User.current_user.token != null) {
             MSMI.setOnSessionChangedListener(new MSMI.OnSessionChangedListener() {
                 @Override
                 public void session_changed() {
-                    adapter.changeCursor(MSMI.message_list());
+                    adapter.changeCursor(MSMI.session_list());
                     adapter.notifyDataSetChanged();
                 }
             });
-            MSMI.start_with_user(this, current_user);
+            MSMI.start_with_user(this,  MSMI_User.current_user);
         }
 
         // 把数库中的内容画在视图上
         listView = findViewById(R.id.listview);
-        adapter = new MSMI_List_Adapter(this, MSMI.message_list(), true);
+        adapter = new MSMI_Session_Adapter(this, MSMI.session_list(), true);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -59,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 MSMI.clear_sessions();
-                adapter.changeCursor(MSMI.message_list());
+                adapter.changeCursor(MSMI.session_list());
                 adapter.notifyDataSetChanged();
             }
         });
@@ -90,11 +89,12 @@ public class MainActivity extends AppCompatActivity {
         ChatActivity.show_by_user(this, user);
     }
 
+    // 从聊天退出来时，刷新一下session_list
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == ChatActivity.CHAT_FLAG){
-            adapter.changeCursor(MSMI.message_list());
+            adapter.changeCursor(MSMI.session_list());
             adapter.notifyDataSetChanged();
         }
     }

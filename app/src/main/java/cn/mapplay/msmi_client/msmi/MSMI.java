@@ -15,8 +15,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MSMI {
-    public static MSMI_User _current_user;
-
     private static final String TAG = "MSMI_Backservice";
     private static Context _context;
     private static OnSessionChangedListener onSessionChangedListener;
@@ -24,7 +22,7 @@ public class MSMI {
 
     public static void start_with_user(Context context, MSMI_User user) {
         _context = context;
-        _current_user = user;
+        MSMI_User.current_user = user;
         context.startService(new Intent(context, MSMI_Backservice.class).putExtra("token", user.token));
     }
 
@@ -36,12 +34,12 @@ public class MSMI {
         session.update_time = new Date().getTime();
 
         MSMI_Single single = new MSMI_Single(session.id);
-        single.user = _current_user;
+        single.user = MSMI_User.current_user;
         single.send_time = new Date().getTime();
         single.content_type = "text";
         single.content = text;
 
-        if(session.update() && single.save(_context)){
+        if (session.update(_context) && single.save(_context)) {
             if (MSMI.getOnMessageChangedListener() != null) {
                 MSMI.getOnMessageChangedListener().message_changed(session.identifier);
             }
@@ -53,11 +51,11 @@ public class MSMI {
             Log.i(TAG, "single: 插入失败");
         }
 
-        MSMI_Server.ser.send_message(_current_user.token, tag_id, text).enqueue(new Callback<JsonObject>() {
+        MSMI_Server.ser.send_message(MSMI_User.current_user.token, tag_id, text).enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 if (success(response)) {
-
+                    // todo 发送成功
                 }
             }
 
@@ -67,17 +65,14 @@ public class MSMI {
         });
     }
 
-    public static Cursor message_list() {
-        return MSMI_DB.helper(_context)
-                .getWritableDatabase()
+    public static Cursor session_list() {
+        return MSMI_DB.helper(_context).getWritableDatabase()
                 .query(MSMI_DB.SESSION, null, null, null, null, null, "_update_time DESC");
     }
 
-    public static Cursor get_message_by_session(String session_identifier) {
-        Cursor cursor = MSMI_DB.helper(_context).getWritableDatabase()
+    public static Cursor single_list(String session_identifier) {
+        return MSMI_DB.helper(_context).getWritableDatabase()
                 .rawQuery("SELECT * FROM single INNER JOIN session WHERE session._identifier=? AND single._session_id = session._id ORDER BY single._send_time ASC;", new String[]{session_identifier});
-        cursor.moveToFirst();
-        return cursor;
     }
 
     public static void clear_sessions() {

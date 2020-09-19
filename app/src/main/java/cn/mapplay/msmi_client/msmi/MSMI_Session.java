@@ -15,10 +15,7 @@ public class MSMI_Session {
     public int un_read_number;
     public boolean is_checked;
 
-    private Context context;
-
-    public MSMI_Session(Context context , String _identifier) {
-        this.context = context;
+    public MSMI_Session(Context context, String _identifier) {
         SQLiteDatabase db = MSMI_DB.helper(context).getWritableDatabase();
         Cursor cursor = db.query(MSMI_DB.SESSION, null, "_identifier=?", new String[]{_identifier}, null, null, null);
         if (cursor == null || cursor.getCount() == 0) {
@@ -41,10 +38,20 @@ public class MSMI_Session {
     }
 
     public MSMI_Session(Context context, long _id) {
-        this.context = context;
         SQLiteDatabase db = MSMI_DB.helper(context).getWritableDatabase();
         Cursor cursor = db.query(MSMI_DB.SESSION, null, "_id=?", new String[]{_id + ""}, null, null, null);
-        if (cursor.getCount() > 0 && cursor.moveToFirst()) {
+        if (cursor.moveToFirst()) {
+            set_valus(cursor);
+        }
+        db.close();
+    }
+
+    public MSMI_Session(Cursor cursor) {
+        set_valus(cursor);
+    }
+
+    private void set_valus(Cursor cursor) {
+        if (cursor.getCount() > 0) {
             this.id = cursor.getLong(cursor.getColumnIndex("_id"));
             this.identifier = cursor.getString(cursor.getColumnIndex("_identifier"));
             this.title = cursor.getString(cursor.getColumnIndex("_title"));
@@ -54,10 +61,9 @@ public class MSMI_Session {
             this.un_read_number = cursor.getInt(cursor.getColumnIndex("un_read"));
             this.is_checked = cursor.getInt(cursor.getColumnIndex("isChecked")) == 1;
         }
-        db.close();
     }
 
-    public boolean update() {
+    public boolean update(Context context) {
         SQLiteDatabase db = MSMI_DB.helper(context).getWritableDatabase();
         ContentValues session_values = new ContentValues();
         session_values.put("_title", title);

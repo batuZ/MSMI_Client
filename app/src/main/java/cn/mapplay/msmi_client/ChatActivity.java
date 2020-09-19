@@ -51,32 +51,37 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.chat_activity);
+        title = findViewById(R.id.title);
+        listView = findViewById(R.id.listview);
+        editText = findViewById(R.id.edit_text);
+        send_btn = findViewById(R.id.send_btn);
+
+        // 接收传进来的参数
         tag_user = new MSMI_User(
                 getIntent().getStringExtra(USER_ID),
                 getIntent().getStringExtra(USER_NAME),
                 getIntent().getStringExtra(USER_AVATAR), null
         );
 
-        title = findViewById(R.id.title);
-        listView = findViewById(R.id.listview);
-        editText = findViewById(R.id.edit_text);
-        send_btn = findViewById(R.id.send_btn);
-
+        // 设置title
         title.setText(tag_user.name);
 
+        // 接收消息监听
         MSMI.setOnMessageChangedListener(new MSMI.OnMessageChangedListener() {
             @Override
             public void message_changed(String s_id) {
                 if (s_id.equals(tag_user.identifier)) {
-                    adapter.changeCursor(MSMI.get_message_by_session(tag_user.identifier));
+                    adapter.changeCursor(MSMI.single_list(tag_user.identifier));
                     adapter.notifyDataSetChanged();
                 }
             }
         });
 
-        adapter = new MSMI_Chat_Adapter(this, MSMI.get_message_by_session(tag_user.identifier), true);
+        // 设置适配器
+        adapter = new MSMI_Chat_Adapter(this, MSMI.single_list(tag_user.identifier), true);
         listView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
+
+        // 发送消息事件
         send_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -84,5 +89,8 @@ public class ChatActivity extends AppCompatActivity {
                 editText.setText(null);
             }
         });
+
+        // 滚动到最后一条
+        listView.setSelection(adapter.getCount()-1);
     }
 }

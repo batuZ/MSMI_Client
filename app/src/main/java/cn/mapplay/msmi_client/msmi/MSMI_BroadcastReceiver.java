@@ -26,7 +26,7 @@ public class MSMI_BroadcastReceiver extends BroadcastReceiver {
                     session.update_time = single.send_time;
                     single.session_id = session.id;
                     // 插入新的消息
-                    if (session.update() && single.save(context)) {
+                    if (session.update(context) && single.save(context)) {
                         if (MSMI.getOnMessageChangedListener() != null) {
                             MSMI.getOnMessageChangedListener().message_changed(session.identifier);
                         }

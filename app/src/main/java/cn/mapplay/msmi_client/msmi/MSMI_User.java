@@ -3,6 +3,7 @@ package cn.mapplay.msmi_client.msmi;
 import android.database.Cursor;
 
 public class MSMI_User {
+    public static MSMI_User current_user;
     public String identifier;
     public String name;
     public String avatar;
