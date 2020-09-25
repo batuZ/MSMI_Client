@@ -21,6 +21,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ChatActivity" />
+        <activity android:name=".TagetsActivity" />
 
         <service android:name=".msmi.MSMI_Backservice" />
 

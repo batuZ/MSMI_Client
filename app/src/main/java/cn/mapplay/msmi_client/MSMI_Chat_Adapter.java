@@ -34,7 +34,7 @@ public class MSMI_Chat_Adapter extends CursorAdapter {
         content.setText(single.content);
         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) content.getLayoutParams();
 
-        if (single.user.identifier.equals(MSMI_User.current_user.identifier)) {
+        if (single.sender.identifier.equals(MSMI_User.current_user.identifier)) {
             other.setVisibility(View.INVISIBLE);
             self.setVisibility(View.VISIBLE);
             content.setBackgroundResource(R.drawable.content_self_back);

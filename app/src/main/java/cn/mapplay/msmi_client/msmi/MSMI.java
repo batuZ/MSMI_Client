@@ -5,10 +5,14 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -16,7 +20,7 @@ import retrofit2.Response;
 
 /**
  * 主入口
- * */
+ */
 
 public class MSMI {
     private static final String TAG = "MSMI_Backservice";
@@ -34,43 +38,84 @@ public class MSMI {
     // 发送消息
     public static void send_message(String tag_id, String tag_name, String tag_avatar, String text) {
         // 更新session
-        MSMI_Session session = new MSMI_Session(_context, tag_id);
-        session.title = tag_name;
-        session.sub_title = text;
-        session.avatar = tag_avatar;
-        session.update_time = new Date().getTime();
+        MSMI_Session session = new MSMI_Session();
+        session.session_identifier = tag_id;
+        session.session_title = tag_name;
+        session.session_icon = tag_avatar;
+        session.content = text;
+        session.send_time = new Date().getTime();
+        session.is_checked = true;
 
-        // 创建一条single记录，塞到库里
-        MSMI_Single single = new MSMI_Single(session.id);
-        single.user = MSMI_User.current_user;
-        single.send_time = new Date().getTime();
-        single.content_type = "text";
-        single.content = text;
+        if (session.save(_context)) {
+            // 创建一条single记录，塞到库里
+            MSMI_Single single = new MSMI_Single(session.id);
+            single.sender = MSMI_User.current_user;
+            single.send_time = new Date().getTime();
+            single.content_type = "text";
+            single.content = text;
+            // 发起回调，刷UI
+            if (single.save(_context)) {
+                if (MSMI.getOnMessageChangedListener() != null) {
+                    MSMI.getOnMessageChangedListener().message_changed(session.session_identifier);
+                }
+                if (MSMI.getOnSessionChangedListener() != null) {
+                    MSMI.getOnSessionChangedListener().session_changed();
+                }
+                Log.i(TAG, "single: 插入成功");
+            } else {
+                Log.i(TAG, "single: 插入失败");
+            }
 
-        // 发起回调，刷UI
-        if (session.update(_context) && single.save(_context)) {
-            if (MSMI.getOnMessageChangedListener() != null) {
-                MSMI.getOnMessageChangedListener().message_changed(session.identifier);
-            }
-            if (MSMI.getOnSessionChangedListener() != null) {
-                MSMI.getOnSessionChangedListener().session_changed();
-            }
-            Log.i(TAG, "single: 插入成功");
-        } else {
-            Log.i(TAG, "single: 插入失败");
+            // 消息发送请求
+            MSMI_Server.ser.send_message(MSMI_User.current_user.token, tag_id, text).enqueue(new Callback<JsonObject>() {
+                @Override
+                public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                    if (success(response)) {
+                        // todo 发送成功
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<JsonObject> call, Throwable t) {
+                }
+            });
         }
+    }
 
-        // 消息发送请求
-        MSMI_Server.ser.send_message(MSMI_User.current_user.token, tag_id, text).enqueue(new Callback<JsonObject>() {
+    public static void get_friends(final OnRequestBackListener listener){
+        MSMI_Server.ser.get_frends(MSMI_User.current_user.token).enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                if (success(response)) {
-                    // todo 发送成功
+                if(success(response)){
+                    MSMI_User.friends = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                    }.getType());
+                    if(listener!=null)
+                        listener.success();
                 }
             }
 
             @Override
             public void onFailure(Call<JsonObject> call, Throwable t) {
+            }
+        });
+    }
+
+    // 添加好友
+    public static void add_friend(String tag_id, final OnRequestBackListener listener) {
+        MSMI_Server.ser.add_friend(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (success(response)) {
+                    MSMI_User.friends = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                    }.getType());
+                    if(listener!=null)
+                        listener.success();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+
             }
         });
     }
@@ -94,9 +139,9 @@ public class MSMI {
     }
 
     // 清空session中的single列表
-    public static void clear_messages(String session_identifier){
+    public static void clear_messages(String session_identifier) {
         MSMI_DB.helper(_context).getWritableDatabase()
-                .execSQL("DELETE FROM single WHERE _session_id IN (SELECT _id FROM session WHERE _identifier=?);",new String[]{session_identifier});
+                .execSQL("DELETE FROM single WHERE _session_id IN (SELECT _id FROM session WHERE _identifier=?);", new String[]{session_identifier});
         MSMI_DB.helper(_context).getWritableDatabase().close();
     }
 
@@ -143,5 +188,9 @@ public class MSMI {
 
     public interface OnMessageChangedListener {
         void message_changed(String session_id);
+    }
+
+    public interface OnRequestBackListener{
+        void success();
     }
 }

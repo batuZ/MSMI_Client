@@ -11,7 +11,7 @@ public class MSMI_Single {
     public long id;
     public long session_id;
     public String message_type;
-    public MSMI_User user;
+    public MSMI_User sender;
     public long send_time;
     public String content_type;
     public String content;
@@ -25,7 +25,7 @@ public class MSMI_Single {
         if (cursor.getCount() > 0) {
             this.id = cursor.getLong(cursor.getColumnIndex("_id"));
             this.session_id = cursor.getLong(cursor.getColumnIndex("_session_id"));
-            this.user = new MSMI_User(
+            this.sender = new MSMI_User(
                     cursor.getString(cursor.getColumnIndex("_sender_id")),
                     cursor.getString(cursor.getColumnIndex("_sender_name")),
                     cursor.getString(cursor.getColumnIndex("_sender_avatar")),null
@@ -41,9 +41,9 @@ public class MSMI_Single {
         if (session_id == 0) return false;
         ContentValues values = new ContentValues();
         values.put("_session_id", session_id);
-        values.put("_sender_id", user.identifier);
-        values.put("_sender_name", user.name);
-        values.put("_sender_avatar", user.avatar);
+        values.put("_sender_id", sender.identifier);
+        values.put("_sender_name", sender.name);
+        values.put("_sender_avatar", sender.avatar);
         values.put("_send_time", send_time);
         values.put("_content_type", content_type);
         values.put("_content", content);

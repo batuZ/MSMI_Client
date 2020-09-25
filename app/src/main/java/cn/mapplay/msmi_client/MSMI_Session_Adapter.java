@@ -19,7 +19,7 @@ public class MSMI_Session_Adapter extends CursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return LayoutInflater.from(context).inflate(R.layout.list_item_layout, null);
+        return LayoutInflater.from(context).inflate(R.layout.session_item_layout, null);
     }
 
     @Override
@@ -28,8 +28,8 @@ public class MSMI_Session_Adapter extends CursorAdapter {
         TextView title = view.findViewById(R.id.title);
         TextView subtitle = view.findViewById(R.id.sub_title);
         TextView date = view.findViewById(R.id.date);
-        title.setText(session.title);
-        subtitle.setText(session.sub_title);
+        title.setText(session.session_title);
+        subtitle.setText(session.content);
         date.setText(session.un_read_number + "");
     }
 }

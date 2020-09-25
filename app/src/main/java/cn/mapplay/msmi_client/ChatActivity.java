@@ -34,9 +34,9 @@ public class ChatActivity extends AppCompatActivity {
         MSMI_Session session = new MSMI_Session(activity, id);
         if (session.id > 0) {
             activity.startActivityForResult(new Intent(activity, ChatActivity.class)
-                    .putExtra(USER_ID, session.identifier)
-                    .putExtra(USER_NAME, session.title)
-                    .putExtra(USER_AVATAR, session.avatar), CHAT_FLAG);
+                    .putExtra(USER_ID, session.session_identifier)
+                    .putExtra(USER_NAME, session.session_title)
+                    .putExtra(USER_AVATAR, session.session_icon), CHAT_FLAG);
         }
     }
 
