@@ -59,11 +59,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.friends:
-                startActivity(new Intent(this, TagetsActivity.class).putExtra("activity_type", "好友列表"));
+                startActivity(new Intent(this, TagetsActivity.class)
+                        .putExtra("activity_type", "好友列表"));
                 break;
             case R.id.shield:
+                startActivity(new Intent(this, TagetsActivity.class)
+                        .putExtra("activity_type", "屏蔽列表"));
                 break;
             case R.id.groups:
+//                startActivity(new Intent(this, TagetsActivity.class).putExtra("activity_type", "群列表"));
+                startActivity(new Intent(this, TagetsActivity.class)
+                        .putExtra("activity_type", "成员列表")
+                        .putExtra("group_idenitifier", "group_idenitifier"));
                 break;
             case R.id.clear_session_btn:
                 MSMI.clear_sessions();

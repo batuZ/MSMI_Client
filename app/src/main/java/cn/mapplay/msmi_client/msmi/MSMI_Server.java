@@ -8,9 +8,11 @@ import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 /**
@@ -35,10 +37,22 @@ public interface MSMI_Server {
     Call<JsonObject> send_message(@Header("msmi_token") String a, @Query("user_id") String b, @Query("content") String c);
 
     @GET("/friends")
-    Call<JsonObject> get_frends(@Header("msmi_token") String a);
+    Call<JsonObject> get_friends(@Header("msmi_token") String a);
 
     @POST("/friends")
-    Call<JsonObject> add_friend(@Header("msmi_token") String a, @Query("user_id") String b);
+    Call<JsonObject> add_friends(@Header("msmi_token") String a, @Query("user_id") String b);
+
+    @DELETE("/friends")
+    Call<JsonObject> remove_friends(@Header("msmi_token") String a, @Query("user_id") String b);
+
+    @GET("/shield")
+    Call<JsonObject> get_shield(@Header("msmi_token") String a);
+
+    @POST("/shield")
+    Call<JsonObject> add_shield(@Header("msmi_token") String a, @Query("user_id") String b);
+
+    @DELETE("/shield")
+    Call<JsonObject> remove_shield(@Header("msmi_token") String a, @Query("user_id") String b);
 
     @POST("/group")
     Call<JsonObject> create_group(@Header("msmi_token") String a, @Query("group_name") String b, @Query("group_icon") String c, @Query("members") String[] e);

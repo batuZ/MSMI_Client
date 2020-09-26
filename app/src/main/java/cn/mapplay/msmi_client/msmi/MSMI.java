@@ -4,9 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
@@ -71,7 +71,8 @@ public class MSMI {
                 @Override
                 public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                     if (success(response)) {
-                        // todo 发送成功
+                        if (!response.message().equals("OK"))
+                            Toast.makeText(_context, response.message(), Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -82,15 +83,17 @@ public class MSMI {
         }
     }
 
-    public static void get_friends(final OnRequestBackListener listener){
-        MSMI_Server.ser.get_frends(MSMI_User.current_user.token).enqueue(new Callback<JsonObject>() {
+    /** 好友 */
+    // 获取好友列表
+    public static void get_friends(final OnRequestBackListener listener) {
+        MSMI_Server.ser.get_friends(MSMI_User.current_user.token).enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                if(success(response)){
-                    MSMI_User.friends = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                if (success(response)) {
+                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
                     }.getType());
-                    if(listener!=null)
-                        listener.success();
+                    if (listener != null)
+                        listener.success(res);
                 }
             }
 
@@ -102,24 +105,105 @@ public class MSMI {
 
     // 添加好友
     public static void add_friend(String tag_id, final OnRequestBackListener listener) {
-        MSMI_Server.ser.add_friend(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
+        MSMI_Server.ser.add_friends(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 if (success(response)) {
-                    MSMI_User.friends = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
                     }.getType());
-                    if(listener!=null)
-                        listener.success();
+                    if (listener != null)
+                        listener.success(res);
                 }
             }
 
             @Override
             public void onFailure(Call<JsonObject> call, Throwable t) {
-
             }
         });
     }
 
+    // 删除好友
+    public static void remove_friend(String tag_id, final OnRequestBackListener listener) {
+        MSMI_Server.ser.remove_friends(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (success(response)) {
+                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                    }.getType());
+                    if (listener != null)
+                        listener.success(res);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+            }
+        });
+    }
+
+    /** 屏蔽 */
+    // 获取屏蔽列表
+    public static void get_shield(final OnRequestBackListener listener) {
+        MSMI_Server.ser.get_shield(MSMI_User.current_user.token).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (success(response)) {
+                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                    }.getType());
+                    if (listener != null)
+                        listener.success(res);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+            }
+        });
+    }
+
+    // 添加屏蔽用户
+    public static void add_shield(String tag_id, final OnRequestBackListener listener) {
+        MSMI_Server.ser.add_shield(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (success(response)) {
+                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                    }.getType());
+                    if (listener != null)
+                        listener.success(res);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+            }
+        });
+    }
+
+    // 删除屏蔽用户
+    public static void remove_shield(String tag_id, final OnRequestBackListener listener) {
+        MSMI_Server.ser.remove_shield(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (success(response)) {
+                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                    }.getType());
+                    if (listener != null)
+                        listener.success(res);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+            }
+        });
+    }
+
+    /** 群 */
+
+    
+
+    /** 会话 */
     // 获取session列表
     public static Cursor session_list() {
         return MSMI_DB.helper(_context).getWritableDatabase()
@@ -145,21 +229,6 @@ public class MSMI {
         MSMI_DB.helper(_context).getWritableDatabase().close();
     }
 
-    public static void setOnSessionChangedListener(OnSessionChangedListener listener) {
-        onSessionChangedListener = listener;
-    }
-
-    public static OnSessionChangedListener getOnSessionChangedListener() {
-        return onSessionChangedListener;
-    }
-
-    public static void setOnMessageChangedListener(OnMessageChangedListener listener) {
-        onMessageChangedListener = listener;
-    }
-
-    public static OnMessageChangedListener getOnMessageChangedListener() {
-        return onMessageChangedListener;
-    }
 
     // 请求状态判断，打印错误信息
     private static boolean success(Response<JsonObject> response) {
@@ -182,6 +251,23 @@ public class MSMI {
         return false;
     }
 
+    /** 监听 */
+    public static void setOnSessionChangedListener(OnSessionChangedListener listener) {
+        onSessionChangedListener = listener;
+    }
+
+    public static OnSessionChangedListener getOnSessionChangedListener() {
+        return onSessionChangedListener;
+    }
+
+    public static void setOnMessageChangedListener(OnMessageChangedListener listener) {
+        onMessageChangedListener = listener;
+    }
+
+    public static OnMessageChangedListener getOnMessageChangedListener() {
+        return onMessageChangedListener;
+    }
+
     public interface OnSessionChangedListener {
         void session_changed();
     }
@@ -190,7 +276,7 @@ public class MSMI {
         void message_changed(String session_id);
     }
 
-    public interface OnRequestBackListener{
-        void success();
+    public interface OnRequestBackListener {
+        void success(List<MSMI_User> users);
     }
 }
