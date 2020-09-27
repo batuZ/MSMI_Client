@@ -67,10 +67,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .putExtra("activity_type", "屏蔽列表"));
                 break;
             case R.id.groups:
-//                startActivity(new Intent(this, TagetsActivity.class).putExtra("activity_type", "群列表"));
                 startActivity(new Intent(this, TagetsActivity.class)
-                        .putExtra("activity_type", "成员列表")
-                        .putExtra("group_idenitifier", "group_idenitifier"));
+                        .putExtra("activity_type", "群列表"));
+//                startActivity(new Intent(this, TagetsActivity.class)
+//                        .putExtra("activity_type", "成员列表")
+//                        .putExtra("group_idenitifier", "group_idenitifier"));
                 break;
             case R.id.clear_session_btn:
                 MSMI.clear_sessions();

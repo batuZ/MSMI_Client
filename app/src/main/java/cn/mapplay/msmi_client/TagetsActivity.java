@@ -13,9 +13,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import cn.mapplay.msmi_client.msmi.MSMI;
+import cn.mapplay.msmi_client.msmi.MSMI_Group;
 import cn.mapplay.msmi_client.msmi.MSMI_User;
 
 public class TagetsActivity extends AppCompatActivity {
@@ -24,7 +26,7 @@ public class TagetsActivity extends AppCompatActivity {
     private TextView title, add_btn;
     private EditText editText;
     private RecyclerView listView;
-    private MAdapter adapter;
+    private BaseQuickAdapter adapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,11 +41,11 @@ public class TagetsActivity extends AppCompatActivity {
 
         title.setText(activity_type);
 
-        adapter = new MAdapter(R.layout.user_item_layout);
-        listView.setAdapter(adapter);
         listView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
-        if(activity_type.equals("好友列表")){
+        if (activity_type.equals("好友列表")) {
+            adapter = new MAdapter(R.layout.user_item_layout);
+            listView.setAdapter(adapter);
             // 启动后立即获取好友列表
             MSMI.get_friends(listener());
             // 点击进入聊天页面
@@ -72,7 +74,9 @@ public class TagetsActivity extends AppCompatActivity {
             });
         }
 
-        if(activity_type.equals("屏蔽列表")){
+        if (activity_type.equals("屏蔽列表")) {
+            adapter = new MAdapter(R.layout.user_item_layout);
+            listView.setAdapter(adapter);
             // 启动后立即获取屏蔽列表
             MSMI.get_shield(listener());
             // 添加屏蔽
@@ -93,15 +97,46 @@ public class TagetsActivity extends AppCompatActivity {
             });
         }
 
+        if (activity_type.equals("成员列表")) {
+        }
 
+        if (activity_type.equals("群列表")) {
+            adapter = new GAdapter(R.layout.user_item_layout);
+            listView.setAdapter(adapter);
+            MSMI.get_group_list(listener());
+            // 点击进入聊天页面
+            adapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+                    MSMI_Group group = (MSMI_Group) adapter.getItem(position);
+//                    ChatActivity.show_by_user(TagetsActivity.this, group);
+                }
+            });
+            // 创建群
+            add_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    MSMI.create_group(editText.getText().toString(), "http://group_avatar/432.jpg", null, listener());
+                }
+            });
+            // 长按删除群
+            adapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
+                    MSMI_Group group = (MSMI_Group) adapter.getItem(position);
+                    MSMI.dismiss_group(group.group_id, listener());
+                    return false;
+                }
+            });
+        }
     }
 
     // 请求成功回调对象
     private MSMI.OnRequestBackListener listener() {
         return new MSMI.OnRequestBackListener() {
             @Override
-            public void success(List<MSMI_User> users) {
-                adapter.setNewData(users);
+            public void success(List list) {
+                adapter.setNewData(list);
             }
         };
     }
@@ -116,6 +151,18 @@ public class TagetsActivity extends AppCompatActivity {
         protected void convert(BaseViewHolder helper, MSMI_User item) {
             TextView textView = helper.itemView.findViewById(R.id.user_name);
             textView.setText(item.name);
+        }
+    }
+
+    class GAdapter extends BaseQuickAdapter<MSMI_Group, BaseViewHolder> {
+        public GAdapter(int layoutResId) {
+            super(layoutResId);
+        }
+
+        @Override
+        protected void convert(BaseViewHolder helper, MSMI_Group item) {
+            TextView textView = helper.itemView.findViewById(R.id.user_name);
+            textView.setText(item.group_name);
         }
     }
 }

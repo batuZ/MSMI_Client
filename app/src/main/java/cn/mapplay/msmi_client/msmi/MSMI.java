@@ -7,6 +7,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
@@ -83,7 +84,9 @@ public class MSMI {
         }
     }
 
-    /** 好友 */
+    /**
+     * 好友
+     */
     // 获取好友列表
     public static void get_friends(final OnRequestBackListener listener) {
         MSMI_Server.ser.get_friends(MSMI_User.current_user.token).enqueue(new Callback<JsonObject>() {
@@ -141,7 +144,9 @@ public class MSMI {
         });
     }
 
-    /** 屏蔽 */
+    /**
+     * 屏蔽
+     */
     // 获取屏蔽列表
     public static void get_shield(final OnRequestBackListener listener) {
         MSMI_Server.ser.get_shield(MSMI_User.current_user.token).enqueue(new Callback<JsonObject>() {
@@ -199,11 +204,70 @@ public class MSMI {
         });
     }
 
-    /** 群 */
+    /**
+     * 群
+     */
+    // 获取群列表
+    public static void get_group_list(final OnRequestBackListener listener) {
+        MSMI_Server.ser.get_groups(MSMI_User.current_user.token).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (success(response)) {
+                    List<MSMI_Group> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("groups").getAsJsonArray(), new TypeToken<List<MSMI_Group>>() {
+                    }.getType());
+                    if (listener != null)
+                        listener.success(res);
+                }
+            }
 
-    
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+            }
+        });
+    }
 
-    /** 会话 */
+    // 创建群
+    public static void create_group(String group_name, String icon_url, String[] members, final OnRequestBackListener listener) {
+        MSMI_Server.ser.create_group(MSMI_User.current_user.token, group_name, icon_url, members).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (success(response)) {
+                    List<MSMI_Group> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("groups").getAsJsonArray(), new TypeToken<List<MSMI_Group>>() {
+                    }.getType());
+                    if (listener != null)
+                        listener.success(res);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+            }
+        });
+    }
+
+    // 解散群
+    public static void dismiss_group(String identifier, final OnRequestBackListener listener) {
+        MSMI_Server.ser.dismiss_group(MSMI_User.current_user.token, identifier).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (success(response)) {
+                    List<MSMI_Group> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("groups").getAsJsonArray(), new TypeToken<List<MSMI_Group>>() {
+                    }.getType());
+                    if (listener != null)
+                        listener.success(res);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+            }
+        });
+    }
+
+
+    /**
+     * 会话
+     */
     // 获取session列表
     public static Cursor session_list() {
         return MSMI_DB.helper(_context).getWritableDatabase()
@@ -251,7 +315,9 @@ public class MSMI {
         return false;
     }
 
-    /** 监听 */
+    /**
+     * 监听
+     */
     public static void setOnSessionChangedListener(OnSessionChangedListener listener) {
         onSessionChangedListener = listener;
     }
@@ -277,6 +343,6 @@ public class MSMI {
     }
 
     public interface OnRequestBackListener {
-        void success(List<MSMI_User> users);
+        void success(List res);
     }
 }
