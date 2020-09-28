@@ -36,17 +36,18 @@ public class ChatActivity extends AppCompatActivity {
         // 设置title
         title.setText(session.session_title);
 
-        if(session.session_type.equals("group_chat")){
+        if (session.session_type.equals("group_chat")) {
             // 群成员列表
             clear_btn.setText("members");
             clear_btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     startActivity(new Intent(ChatActivity.this, TagetsActivity.class)
-                            .putExtra("activity_type", "成员列表"));
+                            .putExtra("activity_type", "成员列表")
+                            .putExtra("group_idenitifier", session.session_identifier));
                 }
             });
-        }else{
+        } else {
             // 清空事件
             clear_btn.setOnClickListener(new View.OnClickListener() {
                 @Override

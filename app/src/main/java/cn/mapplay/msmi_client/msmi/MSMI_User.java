@@ -10,6 +10,7 @@ public class MSMI_User {
     public String name;
     public String avatar;
     public String token;
+    public long member_type;
 
     public MSMI_User(String identifier, String name, String avatar) {
         this.identifier = identifier;

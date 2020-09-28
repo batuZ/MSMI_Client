@@ -262,7 +262,7 @@ public class MSMI {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 if (success(response)) {
-                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("members").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
                     }.getType());
                     if (listener != null)
                         listener.success(res);
@@ -281,7 +281,7 @@ public class MSMI {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 if (success(response)) {
-                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("members").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
                     }.getType());
                     if (listener != null)
                         listener.success(res);
@@ -300,7 +300,7 @@ public class MSMI {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 if (success(response)) {
-                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("members").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
                     }.getType());
                     if (listener != null)
                         listener.success(res);
