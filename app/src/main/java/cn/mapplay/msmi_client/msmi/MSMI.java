@@ -7,7 +7,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
@@ -37,19 +36,15 @@ public class MSMI {
     }
 
     // 发送消息
-    public static void send_message(String tag_id, String tag_name, String tag_avatar, String text) {
+    public static void send_message(MSMI_Session session, String text) {
         // 更新session
-        MSMI_Session session = new MSMI_Session();
-        session.session_identifier = tag_id;
-        session.session_title = tag_name;
-        session.session_icon = tag_avatar;
         session.content = text;
         session.send_time = new Date().getTime();
         session.is_checked = true;
 
         if (session.save(_context)) {
             // 创建一条single记录，塞到库里
-            MSMI_Single single = new MSMI_Single(session.id);
+            MSMI_Message single = new MSMI_Message(session.id);
             single.sender = MSMI_User.current_user;
             single.send_time = new Date().getTime();
             single.content_type = "text";
@@ -68,7 +63,7 @@ public class MSMI {
             }
 
             // 消息发送请求
-            MSMI_Server.ser.send_message(MSMI_User.current_user.token, tag_id, text).enqueue(new Callback<JsonObject>() {
+            MSMI_Server.ser.send_message(MSMI_User.current_user.token, session.session_identifier, text).enqueue(new Callback<JsonObject>() {
                 @Override
                 public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                     if (success(response)) {
@@ -105,7 +100,6 @@ public class MSMI {
             }
         });
     }
-
     // 添加好友
     public static void add_friend(String tag_id, final OnRequestBackListener listener) {
         MSMI_Server.ser.add_friends(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
@@ -124,7 +118,6 @@ public class MSMI {
             }
         });
     }
-
     // 删除好友
     public static void remove_friend(String tag_id, final OnRequestBackListener listener) {
         MSMI_Server.ser.remove_friends(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
@@ -165,7 +158,6 @@ public class MSMI {
             }
         });
     }
-
     // 添加屏蔽用户
     public static void add_shield(String tag_id, final OnRequestBackListener listener) {
         MSMI_Server.ser.add_shield(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
@@ -184,7 +176,6 @@ public class MSMI {
             }
         });
     }
-
     // 删除屏蔽用户
     public static void remove_shield(String tag_id, final OnRequestBackListener listener) {
         MSMI_Server.ser.remove_shield(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
@@ -225,7 +216,6 @@ public class MSMI {
             }
         });
     }
-
     // 创建群
     public static void create_group(String group_name, String icon_url, String[] members, final OnRequestBackListener listener) {
         MSMI_Server.ser.create_group(MSMI_User.current_user.token, group_name, icon_url, members).enqueue(new Callback<JsonObject>() {
@@ -244,7 +234,6 @@ public class MSMI {
             }
         });
     }
-
     // 解散群
     public static void dismiss_group(String identifier, final OnRequestBackListener listener) {
         MSMI_Server.ser.dismiss_group(MSMI_User.current_user.token, identifier).enqueue(new Callback<JsonObject>() {
@@ -260,6 +249,104 @@ public class MSMI {
 
             @Override
             public void onFailure(Call<JsonObject> call, Throwable t) {
+            }
+        });
+    }
+
+    /**
+     * 群成员
+     */
+    // 获取群成员列表
+    public static void get_members(String group_identifier, final OnRequestBackListener listener) {
+        MSMI_Server.ser.get_members(MSMI_User.current_user.token, group_identifier).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (success(response)) {
+                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                    }.getType());
+                    if (listener != null)
+                        listener.success(res);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+
+            }
+        });
+    }
+    // 添加群成员
+    public static void add_members(String group_identifier, String[] members, final OnRequestBackListener listener) {
+        MSMI_Server.ser.add_members(MSMI_User.current_user.token, group_identifier, members).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (success(response)) {
+                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                    }.getType());
+                    if (listener != null)
+                        listener.success(res);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+
+            }
+        });
+    }
+    // 移除群成员
+    public static void remove_members(String group_identifier, String[] members, final OnRequestBackListener listener) {
+        MSMI_Server.ser.remove_members(MSMI_User.current_user.token, group_identifier, members).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (success(response)) {
+                    List<MSMI_User> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("users").getAsJsonArray(), new TypeToken<List<MSMI_User>>() {
+                    }.getType());
+                    if (listener != null)
+                        listener.success(res);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+            }
+        });
+    }
+    // 加入群
+    public static void join_group(String group_identifier, final OnRequestBackListener listener) {
+        MSMI_Server.ser.join(MSMI_User.current_user.token, group_identifier).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (success(response)) {
+                    List<MSMI_Group> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("groups").getAsJsonArray(), new TypeToken<List<MSMI_Group>>() {
+                    }.getType());
+                    if (listener != null)
+                        listener.success(res);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+
+            }
+        });
+    }
+    // 退出群
+    public static void quit_group(String group_identifier, final OnRequestBackListener listener) {
+        MSMI_Server.ser.quit(MSMI_User.current_user.token, group_identifier).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (success(response)) {
+                    List<MSMI_Group> res = new Gson().fromJson(response.body().get("ms_content").getAsJsonObject().get("groups").getAsJsonArray(), new TypeToken<List<MSMI_Group>>() {
+                    }.getType());
+                    if (listener != null)
+                        listener.success(res);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+
             }
         });
     }

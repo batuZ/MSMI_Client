@@ -1,5 +1,6 @@
 package cn.mapplay.msmi_client;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -13,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import cn.mapplay.msmi_client.msmi.MSMI;
@@ -53,7 +53,7 @@ public class TagetsActivity extends AppCompatActivity {
                 @Override
                 public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                     MSMI_User user = (MSMI_User) adapter.getItem(position);
-                    ChatActivity.show_by_user(TagetsActivity.this, user);
+                    startActivity(new Intent(TagetsActivity.this, ChatActivity.class).putExtra("session", user.session()));
                 }
             });
             // 添加好友
@@ -97,9 +97,6 @@ public class TagetsActivity extends AppCompatActivity {
             });
         }
 
-        if (activity_type.equals("成员列表")) {
-        }
-
         if (activity_type.equals("群列表")) {
             adapter = new GAdapter(R.layout.user_item_layout);
             listView.setAdapter(adapter);
@@ -109,10 +106,11 @@ public class TagetsActivity extends AppCompatActivity {
                 @Override
                 public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                     MSMI_Group group = (MSMI_Group) adapter.getItem(position);
-//                    ChatActivity.show_by_user(TagetsActivity.this, group);
+                    startActivity(new Intent(TagetsActivity.this, ChatActivity.class).putExtra("session", group.session()));
                 }
             });
             // 创建群
+            add_btn.setText("创建");
             add_btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -125,6 +123,37 @@ public class TagetsActivity extends AppCompatActivity {
                 public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
                     MSMI_Group group = (MSMI_Group) adapter.getItem(position);
                     MSMI.dismiss_group(group.group_id, listener());
+                    return false;
+                }
+            });
+        }
+
+        if (activity_type.equals("成员列表") && group_idenitifier != null) {
+            adapter = new MAdapter(R.layout.user_item_layout);
+            listView.setAdapter(adapter);
+            // 获取成员列表
+            MSMI.get_members(group_idenitifier, listener());
+            // 点击成员进入单聊页面
+            adapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+                    MSMI_User user = (MSMI_User) adapter.getItem(position);
+                    startActivity(new Intent(TagetsActivity.this, ChatActivity.class).putExtra("session", user.session()));
+                }
+            });
+            // 添加成员
+            add_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    MSMI.add_members(group_idenitifier, new String[]{editText.getText().toString()}, listener());
+                }
+            });
+            // 长按删除成员
+            adapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
+                    MSMI_User user = (MSMI_User) adapter.getItem(position);
+                    MSMI.remove_members(group_idenitifier, new String[]{user.identifier}, listener());
                     return false;
                 }
             });

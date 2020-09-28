@@ -8,7 +8,6 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
@@ -35,7 +34,7 @@ import okhttp3.WebSocketListener;
 
 /**
  * 长连接的后台监听、分类解析
- * */
+ */
 
 public class MSMI_Backservice extends Service {
     private final String TAG = "MSMI_Backservice";
@@ -43,10 +42,6 @@ public class MSMI_Backservice extends Service {
     private Handler handler = new Handler();
     private String token;
     private InitSocketThread socketThread;
-    // 需要订阅的频道
-    private final String SINGLE = "OnlineChannel";
-    private final String GROUP = "GroupChannel";
-    private final String NOTIFICATION = "NotificationChannel";
 
     @Override
     public void onCreate() {
@@ -71,37 +66,18 @@ public class MSMI_Backservice extends Service {
 
     private void initSocket() throws UnknownError, IOException {
         OkHttpClient client = new OkHttpClient.Builder().readTimeout(0, TimeUnit.MILLISECONDS).build();
-        Request request = new Request.Builder()
-                .header("msmi_token", token)
-                .url(MSMI_Server.WS)
-                .build();
-
+        Request request = new Request.Builder().header("msmi_token", token).url(MSMI_Server.WS).build();
         client.newWebSocket(request, new WebSocketListener() {
             @Override
             public void onOpen(WebSocket webSocket, Response response) {
                 super.onOpen(webSocket, response);
-                // 订阅 NotificationChannel
-//                webSocket.send("{\"identifier\":\"{\\\"channel\\\":\\\"OnlineChannel\\\"}\",\"command\":\"subscribe\"}");
+                // 订阅 OnlineChannel
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("command", "subscribe");
                 JsonObject channel = new JsonObject();
-                channel.addProperty("channel", SINGLE);
+                channel.addProperty("channel", "OnlineChannel");
                 jsonObject.addProperty("identifier", channel.toString());
                 webSocket.send(jsonObject.toString());
-
-//                jsonObject = new JsonObject();
-//                jsonObject.addProperty("command", "subscribe");
-//                channel = new JsonObject();
-//                channel.addProperty("channel", GROUP);
-//                jsonObject.addProperty("identifier", channel.toString());
-//                webSocket.send(jsonObject.toString());
-//
-//                jsonObject = new JsonObject();
-//                jsonObject.addProperty("command", "subscribe");
-//                channel = new JsonObject();
-//                channel.addProperty("channel", NOTIFICATION);
-//                jsonObject.addProperty("identifier", channel.toString());
-//                webSocket.send(jsonObject.toString());
             }
 
             @Override
@@ -132,12 +108,8 @@ public class MSMI_Backservice extends Service {
                         JSONObject message = jsonObject.getJSONObject("message");
                         // 分频道的意义：目前，单聊不需要回执，群聊和通知都要回执
                         switch (channel) {
-                            case SINGLE:
-                                single_channel_message(message);
-                                break;
-                            case GROUP:
-                                break;
-                            case NOTIFICATION:
+                            case "OnlineChannel":
+                                online_channel_message(message);
                                 break;
                             default:
                                 Log.i(TAG, "收到未知频道的消息: " + text);
@@ -169,7 +141,7 @@ public class MSMI_Backservice extends Service {
     }
 
     // 发起广播，给MS_BroadcastReceiver处理消息
-    private void single_channel_message(JSONObject message) throws JSONException {
+    private void online_channel_message(JSONObject message) throws JSONException {
         dingdong(message);
         Intent i = new Intent("cn.mapply.mappy.broadcast.NotificationChannel");
         i.setComponent(new ComponentName("cn.mapplay.msmi_client", "cn.mapplay.msmi_client.msmi.MSMI_BroadcastReceiver"));

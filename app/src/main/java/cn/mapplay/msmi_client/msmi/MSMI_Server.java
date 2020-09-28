@@ -35,6 +35,7 @@ public interface MSMI_Server {
     @POST("message/single")
     Call<JsonObject> send_message(@Header("msmi_token") String a, @Query("user_id") String b, @Query("content") String c);
 
+
     // 获取好友列表
     @GET("/friends")
     Call<JsonObject> get_friends(@Header("msmi_token") String a);
@@ -44,6 +45,7 @@ public interface MSMI_Server {
     // 删除好友
     @DELETE("/friends")
     Call<JsonObject> remove_friends(@Header("msmi_token") String a, @Query("user_id") String b);
+
 
     // 获取屏蔽列表
     @GET("/shield")
@@ -72,10 +74,10 @@ public interface MSMI_Server {
     Call<JsonObject> get_members(@Header("msmi_token") String a, @Query("group_id") String b);
     // 添加成员
     @POST("/members")
-    Call<JsonObject> add_members(@Header("msmi_token") String a, @Query("group_id") String b, @Query("members") String[] members);
+    Call<JsonObject> add_members(@Header("msmi_token") String a, @Query("group_id") String b, @Query("members[]") String... members);
     // 移除成员
     @DELETE("/members")
-    Call<JsonObject> remove_members(@Header("msmi_token") String a, @Query("group_id") String b, @Query("members") String[] members);
+    Call<JsonObject> remove_members(@Header("msmi_token") String a, @Query("group_id") String b, @Query("members[]") String... members);
 
 
     // 申请加入群

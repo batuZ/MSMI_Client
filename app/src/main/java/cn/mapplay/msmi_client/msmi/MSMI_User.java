@@ -11,10 +11,13 @@ public class MSMI_User {
     public String avatar;
     public String token;
 
-    public MSMI_User(String identifier, String name, String avatar, String token) {
+    public MSMI_User(String identifier, String name, String avatar) {
         this.identifier = identifier;
         this.name = name;
         this.avatar = avatar;
-        this.token = token;
+    }
+
+    public MSMI_Session session() {
+        return new MSMI_Session("single_chat", this.identifier, this.name, this.avatar);
     }
 }

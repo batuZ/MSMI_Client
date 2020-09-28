@@ -7,28 +7,27 @@ import android.database.sqlite.SQLiteDatabase;
 /**
  * 消息模型
  * */
-public class MSMI_Single {
+public class MSMI_Message {
     public long id;
     public long session_id;
-    public String message_type;
     public MSMI_User sender;
     public long send_time;
     public String content_type;
     public String content;
     public Object preview;
 
-    public MSMI_Single(long session_id) {
+    public MSMI_Message(long session_id) {
         this.session_id = session_id;
     }
 
-    public MSMI_Single(Cursor cursor){
+    public MSMI_Message(Cursor cursor){
         if (cursor.getCount() > 0) {
             this.id = cursor.getLong(cursor.getColumnIndex("_id"));
             this.session_id = cursor.getLong(cursor.getColumnIndex("_session_id"));
             this.sender = new MSMI_User(
                     cursor.getString(cursor.getColumnIndex("_sender_id")),
                     cursor.getString(cursor.getColumnIndex("_sender_name")),
-                    cursor.getString(cursor.getColumnIndex("_sender_avatar")),null
+                    cursor.getString(cursor.getColumnIndex("_sender_avatar"))
             );
             this.send_time = cursor.getLong(cursor.getColumnIndex("_send_time"));
             this.content_type =  cursor.getString(cursor.getColumnIndex("_content_type"));

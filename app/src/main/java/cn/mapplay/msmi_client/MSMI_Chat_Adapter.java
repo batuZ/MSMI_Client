@@ -10,11 +10,11 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import cn.mapplay.msmi_client.msmi.MSMI_Single;
+import cn.mapplay.msmi_client.msmi.MSMI_Message;
 import cn.mapplay.msmi_client.msmi.MSMI_User;
 
 public class MSMI_Chat_Adapter extends CursorAdapter {
-    private MSMI_Single single;
+    private MSMI_Message single;
 
     public MSMI_Chat_Adapter(Context context, Cursor c, boolean autoRequery) {
         super(context, c, autoRequery);
@@ -27,7 +27,7 @@ public class MSMI_Chat_Adapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        single = new MSMI_Single(cursor);
+        single = new MSMI_Message(cursor);
         ImageView other = view.findViewById(R.id.other);
         ImageView self = view.findViewById(R.id.self);
         TextView content = view.findViewById(R.id.chat_content);

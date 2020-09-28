@@ -4,4 +4,8 @@ public class MSMI_Group {
     public String group_id;
     public String group_name;
     public String group_icon;
+
+    public MSMI_Session session() {
+        return new MSMI_Session("group_chat", this.group_id, this.group_name, this.group_icon);
+    }
 }
