@@ -31,10 +31,12 @@ public interface MSMI_Server {
                     .build())
             .build()
             .create(MSMI_Server.class);
-
+    // 发送单聊消息
     @POST("message/single")
-    Call<JsonObject> send_message(@Header("msmi_token") String a, @Query("user_id") String b, @Query("content") String c);
-
+    Call<JsonObject> single_message(@Header("msmi_token") String a, @Query("user_id") String b, @Query("content") String c);
+    // 发送群聊消息
+    @POST("message/group")
+    Call<JsonObject> group_message(@Header("msmi_token") String a, @Query("group_id") String b, @Query("content") String c);
 
     // 获取好友列表
     @GET("/friends")

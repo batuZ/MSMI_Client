@@ -14,7 +14,7 @@ import cn.mapplay.msmi_client.msmi.MSMI_Message;
 import cn.mapplay.msmi_client.msmi.MSMI_User;
 
 public class MSMI_Chat_Adapter extends CursorAdapter {
-    private MSMI_Message single;
+    private MSMI_Message message;
 
     public MSMI_Chat_Adapter(Context context, Cursor c, boolean autoRequery) {
         super(context, c, autoRequery);
@@ -27,20 +27,24 @@ public class MSMI_Chat_Adapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        single = new MSMI_Message(cursor);
+        message = new MSMI_Message(cursor);
         ImageView other = view.findViewById(R.id.other);
         ImageView self = view.findViewById(R.id.self);
         TextView content = view.findViewById(R.id.chat_content);
-        content.setText(single.content);
+        TextView user_name = view.findViewById(R.id.user_name);
+        content.setText(message.content);
+        user_name.setText(message.sender.name);
         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) content.getLayoutParams();
 
-        if (single.sender.identifier.equals(MSMI_User.current_user.identifier)) {
+        if (message.sender.identifier.equals(MSMI_User.current_user.identifier)) {
             other.setVisibility(View.INVISIBLE);
+            user_name.setVisibility(View.GONE);
             self.setVisibility(View.VISIBLE);
             content.setBackgroundResource(R.drawable.content_self_back);
             lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         } else {
             other.setVisibility(View.VISIBLE);
+            user_name.setVisibility(View.VISIBLE);
             self.setVisibility(View.INVISIBLE);
             content.setBackgroundResource(R.drawable.content_back);
             lp.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);

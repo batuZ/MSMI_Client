@@ -23,6 +23,8 @@ import retrofit2.Response;
  */
 
 public class MSMI {
+    public static final String SINGLE = "single_chat";
+    public static final String GROUP = "group_chat";
     private static final String TAG = "MSMI_Backservice";
     private static Context _context;
     private static OnSessionChangedListener onSessionChangedListener;
@@ -44,13 +46,13 @@ public class MSMI {
 
         if (session.save(_context)) {
             // 创建一条single记录，塞到库里
-            MSMI_Message single = new MSMI_Message(session.id);
-            single.sender = MSMI_User.current_user;
-            single.send_time = new Date().getTime();
-            single.content_type = "text";
-            single.content = text;
+            MSMI_Message message = new MSMI_Message(session.id);
+            message.sender = MSMI_User.current_user;
+            message.send_time = new Date().getTime();
+            message.content_type = "text";
+            message.content = text;
             // 发起回调，刷UI
-            if (single.save(_context)) {
+            if (message.save(_context)) {
                 if (MSMI.getOnMessageChangedListener() != null) {
                     MSMI.getOnMessageChangedListener().message_changed(session.session_identifier);
                 }
@@ -63,19 +65,36 @@ public class MSMI {
             }
 
             // 消息发送请求
-            MSMI_Server.ser.send_message(MSMI_User.current_user.token, session.session_identifier, text).enqueue(new Callback<JsonObject>() {
-                @Override
-                public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                    if (success(response)) {
-                        if (!response.message().equals("OK"))
-                            Toast.makeText(_context, response.message(), Toast.LENGTH_SHORT).show();
+            if (session.session_type.equals(SINGLE)) {
+                MSMI_Server.ser.single_message(MSMI_User.current_user.token, session.session_identifier, text).enqueue(new Callback<JsonObject>() {
+                    @Override
+                    public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                        if (success(response)) {
+                            if (!response.message().equals("OK"))
+                                Toast.makeText(_context, response.message(), Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
 
-                @Override
-                public void onFailure(Call<JsonObject> call, Throwable t) {
-                }
-            });
+                    @Override
+                    public void onFailure(Call<JsonObject> call, Throwable t) {
+                    }
+                });
+            } else {
+                MSMI_Server.ser.group_message(MSMI_User.current_user.token, session.session_identifier, text).enqueue(new Callback<JsonObject>() {
+                    @Override
+                    public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                        if (success(response)) {
+                            if (!response.message().equals("OK"))
+                                Toast.makeText(_context, response.message(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<JsonObject> call, Throwable t) {
+
+                    }
+                });
+            }
         }
     }
 
@@ -100,6 +119,7 @@ public class MSMI {
             }
         });
     }
+
     // 添加好友
     public static void add_friend(String tag_id, final OnRequestBackListener listener) {
         MSMI_Server.ser.add_friends(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
@@ -118,6 +138,7 @@ public class MSMI {
             }
         });
     }
+
     // 删除好友
     public static void remove_friend(String tag_id, final OnRequestBackListener listener) {
         MSMI_Server.ser.remove_friends(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
@@ -158,6 +179,7 @@ public class MSMI {
             }
         });
     }
+
     // 添加屏蔽用户
     public static void add_shield(String tag_id, final OnRequestBackListener listener) {
         MSMI_Server.ser.add_shield(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
@@ -176,6 +198,7 @@ public class MSMI {
             }
         });
     }
+
     // 删除屏蔽用户
     public static void remove_shield(String tag_id, final OnRequestBackListener listener) {
         MSMI_Server.ser.remove_shield(MSMI_User.current_user.token, tag_id).enqueue(new Callback<JsonObject>() {
@@ -216,6 +239,7 @@ public class MSMI {
             }
         });
     }
+
     // 创建群
     public static void create_group(String group_name, String icon_url, String[] members, final OnRequestBackListener listener) {
         MSMI_Server.ser.create_group(MSMI_User.current_user.token, group_name, icon_url, members).enqueue(new Callback<JsonObject>() {
@@ -234,6 +258,7 @@ public class MSMI {
             }
         });
     }
+
     // 解散群
     public static void dismiss_group(String identifier, final OnRequestBackListener listener) {
         MSMI_Server.ser.dismiss_group(MSMI_User.current_user.token, identifier).enqueue(new Callback<JsonObject>() {
@@ -275,6 +300,7 @@ public class MSMI {
             }
         });
     }
+
     // 添加群成员
     public static void add_members(String group_identifier, String[] members, final OnRequestBackListener listener) {
         MSMI_Server.ser.add_members(MSMI_User.current_user.token, group_identifier, members).enqueue(new Callback<JsonObject>() {
@@ -294,6 +320,7 @@ public class MSMI {
             }
         });
     }
+
     // 移除群成员
     public static void remove_members(String group_identifier, String[] members, final OnRequestBackListener listener) {
         MSMI_Server.ser.remove_members(MSMI_User.current_user.token, group_identifier, members).enqueue(new Callback<JsonObject>() {
@@ -312,6 +339,7 @@ public class MSMI {
             }
         });
     }
+
     // 加入群
     public static void join_group(String group_identifier, final OnRequestBackListener listener) {
         MSMI_Server.ser.join(MSMI_User.current_user.token, group_identifier).enqueue(new Callback<JsonObject>() {
@@ -331,6 +359,7 @@ public class MSMI {
             }
         });
     }
+
     // 退出群
     public static void quit_group(String group_identifier, final OnRequestBackListener listener) {
         MSMI_Server.ser.quit(MSMI_User.current_user.token, group_identifier).enqueue(new Callback<JsonObject>() {

@@ -19,6 +19,6 @@ public class MSMI_User {
     }
 
     public MSMI_Session session() {
-        return new MSMI_Session("single_chat", this.identifier, this.name, this.avatar);
+        return new MSMI_Session(MSMI.SINGLE, this.identifier, this.name, this.avatar);
     }
 }

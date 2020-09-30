@@ -34,6 +34,7 @@ public class MSMI_DB extends SQLiteOpenHelper {
         StringBuffer sBuffer = new StringBuffer();
         sBuffer.append("create table " + SESSION + "(_id integer primary key autoincrement, ");
         sBuffer.append("_identifier CHAR(64),");
+        sBuffer.append("_type CHAR(64),");
         sBuffer.append("_title NVARCHAR(64),");
         sBuffer.append("_sub_title NVARCHAR(64),");
         sBuffer.append("_avatar VARCHAR(256),");

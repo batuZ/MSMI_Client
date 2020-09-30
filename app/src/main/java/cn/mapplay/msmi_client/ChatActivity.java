@@ -36,7 +36,7 @@ public class ChatActivity extends AppCompatActivity {
         // 设置title
         title.setText(session.session_title);
 
-        if (session.session_type.equals("group_chat")) {
+        if (session.session_type.equals(MSMI.GROUP)) {
             // 群成员列表
             clear_btn.setText("members");
             clear_btn.setOnClickListener(new View.OnClickListener() {

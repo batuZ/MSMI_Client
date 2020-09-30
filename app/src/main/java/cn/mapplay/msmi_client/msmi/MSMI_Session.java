@@ -47,6 +47,7 @@ public class MSMI_Session implements Parcelable {
         if (cursor.getCount() > 0) {
             this.id = cursor.getLong(cursor.getColumnIndex("_id"));
             this.session_identifier = cursor.getString(cursor.getColumnIndex("_identifier"));
+            this.session_type = cursor.getString(cursor.getColumnIndex("_type"));
             this.session_title = cursor.getString(cursor.getColumnIndex("_title"));
             this.content = cursor.getString(cursor.getColumnIndex("_sub_title"));
             this.session_icon = cursor.getString(cursor.getColumnIndex("_avatar"));
@@ -61,6 +62,7 @@ public class MSMI_Session implements Parcelable {
         if (this.session_identifier == null || this.session_identifier.length() == 0) return false;
 
         ContentValues session_values = new ContentValues();
+        session_values.put("_type", this.session_type);
         session_values.put("_title", this.session_title);
         session_values.put("_sub_title", this.content);
         session_values.put("_avatar", this.session_icon);
