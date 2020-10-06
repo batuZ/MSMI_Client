@@ -14,7 +14,8 @@ public class MSMI_Message {
     public long send_time;
     public String content_type;
     public String content;
-    public Object preview;
+    public String content_file;
+    public String content_preview;
 
     public MSMI_Message(long session_id) {
         this.session_id = session_id;
@@ -32,7 +33,8 @@ public class MSMI_Message {
             this.send_time = cursor.getLong(cursor.getColumnIndex("_send_time"));
             this.content_type =  cursor.getString(cursor.getColumnIndex("_content_type"));
             this.content =  cursor.getString(cursor.getColumnIndex("_content"));
-            this.preview =  cursor.getString(cursor.getColumnIndex("_preview"));
+            this.content_file =  cursor.getString(cursor.getColumnIndex("_file"));
+            this.content_preview =  cursor.getString(cursor.getColumnIndex("_preview"));
         }
     }
 
@@ -46,7 +48,8 @@ public class MSMI_Message {
         values.put("_send_time", send_time);
         values.put("_content_type", content_type);
         values.put("_content", content);
-        values.put("_preview", preview + "");
+        values.put("_file", content_file);
+        values.put("_preview", content_preview);
         SQLiteDatabase db = MSMI_DB.helper(context).getWritableDatabase();
         long single_id = db.insert(MSMI_DB.SINGLE, null, values);
         db.close();

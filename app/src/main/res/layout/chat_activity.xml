@@ -64,7 +64,7 @@
             android:layout_marginRight="12dp"
             android:background="#489"
             android:gravity="center"
-            android:text="send"
+            android:text="+"
             android:textColor="#fff" />
 
     </LinearLayout>

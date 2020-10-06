@@ -52,7 +52,8 @@ public class MSMI_DB extends SQLiteOpenHelper {
         sBuffer.append("_send_time CHAR(64),");
         sBuffer.append("_content_type CHAR(64),");
         sBuffer.append("_content TEXT,");
-        sBuffer.append("_preview BLOB,");
+        sBuffer.append("_file VARCHAR(256),");
+        sBuffer.append("_preview VARCHAR(256),");
         sBuffer.append("FOREIGN KEY (_session_id) REFERENCES " + SESSION + "(_id) ON DELETE CASCADE ON UPDATE CASCADE);");
         db.execSQL(sBuffer.toString());
     }

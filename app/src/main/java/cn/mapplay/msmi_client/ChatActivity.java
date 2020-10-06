@@ -1,7 +1,13 @@
 package cn.mapplay.msmi_client;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -58,6 +64,27 @@ public class ChatActivity extends AppCompatActivity {
                 }
             });
         }
+        // 输入文字监听
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() == 0) {
+                    send_btn.setText("+");
+                } else {
+                    send_btn.setText("发送");
+                }
+            }
+        });
 
         // 接收消息监听
         MSMI.setOnMessageChangedListener(new MSMI.OnMessageChangedListener() {
@@ -78,13 +105,29 @@ public class ChatActivity extends AppCompatActivity {
         send_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MSMI.send_message(session, editText.getText().toString());
-                editText.setText(null);
+                if (send_btn.getText().equals("+")) {
+                    startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI), 123);
+                } else {
+                    MSMI.send_message(session, editText.getText().toString());
+                    editText.setText(null);
+                }
             }
         });
 
 
         // 滚动到最后一条
         listView.setSelection(adapter.getCount() - 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 123 && resultCode == Activity.RESULT_OK && data != null) {
+            Cursor cursor = getContentResolver().query(data.getData(), null, null, null, null);
+            cursor.moveToFirst();
+            String path = cursor.getString(cursor.getColumnIndex("_data"));
+
+            cursor.close();
+        }
     }
 }
