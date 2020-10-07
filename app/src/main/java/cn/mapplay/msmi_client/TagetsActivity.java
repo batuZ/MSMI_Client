@@ -16,9 +16,10 @@ import com.chad.library.adapter.base.BaseViewHolder;
 
 import java.util.List;
 
-import cn.mapplay.msmi_client.msmi.MSMI;
-import cn.mapplay.msmi_client.msmi.MSMI_Group;
-import cn.mapplay.msmi_client.msmi.MSMI_User;
+import cn.mapplay.msmi.MSMI;
+import cn.mapplay.msmi.MSMI_Group;
+import cn.mapplay.msmi.MSMI_User;
+
 
 public class TagetsActivity extends AppCompatActivity {
     private String activity_type;

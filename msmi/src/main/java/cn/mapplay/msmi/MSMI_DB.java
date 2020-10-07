@@ -1,4 +1,4 @@
-package cn.mapplay.msmi_client.msmi;
+package cn.mapplay.msmi;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

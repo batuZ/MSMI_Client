@@ -12,9 +12,10 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
-import cn.mapplay.msmi_client.msmi.MSMI_Message;
-import cn.mapplay.msmi_client.msmi.MSMI_Server;
-import cn.mapplay.msmi_client.msmi.MSMI_User;
+import cn.mapplay.msmi.MSMI;
+import cn.mapplay.msmi.MSMI_Message;
+import cn.mapplay.msmi.MSMI_User;
+
 
 public class MSMI_Chat_Adapter extends CursorAdapter {
     private MSMI_Message message;
@@ -89,7 +90,7 @@ public class MSMI_Chat_Adapter extends CursorAdapter {
         public void setImage(Context context, String url) {
             this.text_content.setVisibility(View.GONE);
             this.img_content.setVisibility(View.VISIBLE);
-            Glide.with(context).load(MSMI_Server.API + "/" + url).into(this.img_content);
+            Glide.with(context).load(MSMI.root_(url)).into(this.img_content);
         }
     }
 }

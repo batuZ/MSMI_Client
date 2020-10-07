@@ -1,10 +1,13 @@
-package cn.mapplay.msmi_client.msmi;
+package cn.mapplay.msmi;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -25,16 +28,53 @@ import retrofit2.Response;
 public class MSMI {
     public static final String SINGLE = "single_chat";
     public static final String GROUP = "group_chat";
+    protected static Activity main_activity;
+    protected static MSMI_Config config;
     private static final String TAG = "MSMI_Backservice";
-    private static Context _context;
     private static OnSessionChangedListener onSessionChangedListener;
     private static OnMessageChangedListener onMessageChangedListener;
 
     // 登录
-    public static void start_with_user(Context context, MSMI_User user) {
-        _context = context;
-        MSMI_User.current_user = user;
-        context.startService(new Intent(context, MSMI_Backservice.class).putExtra("token", user.token));
+    public static void start(
+            @NonNull Activity mainActivity,
+            @NonNull String host,
+            int port,
+            boolean https,
+            @NonNull String chat_token,
+            String current_user_identifier,
+            String current_user_name,
+            String current_user_avatar,
+            OnSessionChangedListener listener) {
+
+        MSMI_Config config = new MSMI_Config();
+        config.host = host;
+        config.port = port;
+        config.https = https;
+
+        MSMI_User current_user = new MSMI_User();
+        current_user.identifier = current_user_identifier;
+        current_user.name = current_user_name;
+        current_user.avatar = current_user_avatar;
+        current_user.token = chat_token;
+
+        MSMI.start_with_config(mainActivity, config, current_user, listener);
+    }
+
+    public static void start_with_config(
+            @NonNull Activity mainActivity,
+            @NonNull MSMI_Config config,
+            @NonNull MSMI_User current_user,
+            OnSessionChangedListener listener) {
+        MSMI.main_activity = mainActivity;
+        MSMI.config = config;
+        MSMI.onSessionChangedListener = listener;
+        MSMI_User.current_user = current_user;
+        mainActivity.startService(new Intent(mainActivity, MSMI_Backservice.class).putExtra("token", current_user.token));
+    }
+
+    // 补全链接
+    public static String root_(String part) {
+        return MSMI_Server.API + "\\" + part;
     }
 
     // 发送消息
@@ -44,7 +84,7 @@ public class MSMI {
         session.send_time = new Date().getTime();
         session.is_checked = true;
 
-        if (session.save(_context)) {
+        if (session.save(main_activity)) {
             // 创建一条single记录，塞到库里
             MSMI_Message message = new MSMI_Message(session.id);
             message.sender = MSMI_User.current_user;
@@ -52,7 +92,7 @@ public class MSMI {
             message.content_type = "text";
             message.content = text;
             // 发起回调，刷UI
-            if (message.save(_context)) {
+            if (message.save(main_activity)) {
                 if (MSMI.getOnMessageChangedListener() != null) {
                     MSMI.getOnMessageChangedListener().message_changed(session.session_identifier);
                 }
@@ -71,7 +111,7 @@ public class MSMI {
                     public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                         if (success(response)) {
                             if (!response.message().equals("OK"))
-                                Toast.makeText(_context, response.message(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(main_activity, response.message(), Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -85,7 +125,7 @@ public class MSMI {
                     public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                         if (success(response)) {
                             if (!response.message().equals("OK"))
-                                Toast.makeText(_context, response.message(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(main_activity, response.message(), Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -386,27 +426,27 @@ public class MSMI {
      */
     // 获取session列表
     public static Cursor session_list() {
-        return MSMI_DB.helper(_context).getWritableDatabase()
+        return MSMI_DB.helper(main_activity).getWritableDatabase()
                 .query(MSMI_DB.SESSION, null, null, null, null, null, "_update_time DESC");
     }
 
     // 获取指定session中的消息列表
     public static Cursor single_list(String session_identifier) {
-        return MSMI_DB.helper(_context).getWritableDatabase()
+        return MSMI_DB.helper(main_activity).getWritableDatabase()
                 .rawQuery("SELECT * FROM single INNER JOIN session WHERE session._identifier=? AND single._session_id = session._id ORDER BY single._send_time ASC;", new String[]{session_identifier});
     }
 
     // 清空session列表
     public static void clear_sessions() {
-        MSMI_DB.helper(_context).getWritableDatabase().delete(MSMI_DB.SESSION, null, null);
-        MSMI_DB.helper(_context).getWritableDatabase().close();
+        MSMI_DB.helper(main_activity).getWritableDatabase().delete(MSMI_DB.SESSION, null, null);
+        MSMI_DB.helper(main_activity).getWritableDatabase().close();
     }
 
     // 清空session中的single列表
     public static void clear_messages(String session_identifier) {
-        MSMI_DB.helper(_context).getWritableDatabase()
+        MSMI_DB.helper(main_activity).getWritableDatabase()
                 .execSQL("DELETE FROM single WHERE _session_id IN (SELECT _id FROM session WHERE _identifier=?);", new String[]{session_identifier});
-        MSMI_DB.helper(_context).getWritableDatabase().close();
+        MSMI_DB.helper(main_activity).getWritableDatabase().close();
     }
 
 

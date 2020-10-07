@@ -1,11 +1,10 @@
-package cn.mapplay.msmi_client.msmi;
+package cn.mapplay.msmi;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
@@ -24,8 +23,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import cn.mapplay.msmi_client.MainActivity;
-import cn.mapplay.msmi_client.R;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -48,7 +45,7 @@ public class MSMI_Backservice extends Service {
         super.onCreate();
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence app_name = this.getString(R.string.app_name);
+            CharSequence app_name = "msmi";
             NotificationChannel channel = new NotificationChannel("PUSH_CHANNEL_ID", app_name, NotificationManager.IMPORTANCE_DEFAULT);
             notificationManager.createNotificationChannel(channel);
         }
@@ -143,17 +140,14 @@ public class MSMI_Backservice extends Service {
     // 发起广播，给MS_BroadcastReceiver处理消息
     private void online_channel_message(JSONObject message) throws JSONException {
         dingdong(message);
-        Intent i = new Intent("cn.mapply.mappy.broadcast.NotificationChannel");
-        i.setComponent(new ComponentName("cn.mapplay.msmi_client", "cn.mapplay.msmi_client.msmi.MSMI_BroadcastReceiver"));
-        i.putExtra("message", message.toString());
-        sendBroadcast(i);
+        sendBroadcast(new Intent(this, MSMI_BroadcastReceiver.class).putExtra("message", message.toString()));
     }
 
     // 发出提示通知
     private void dingdong(JSONObject message) throws JSONException {
         // 需要广播权限
         // MainActivity 活动时发起通知
-        Intent i_main = new Intent(this, MainActivity.class);
+        Intent i_main = new Intent(MSMI.main_activity.getPackageName());
         PendingIntent pi = PendingIntent.getActivity(this, 0, i_main, 0);
         Notification notification = new NotificationCompat.Builder(this, "PUSH_CHANNEL_ID")
                 .setSmallIcon(R.mipmap.ic_launcher)

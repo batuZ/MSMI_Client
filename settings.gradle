@@ -1,2 +1,3 @@
+include ':msmi'
 include ':app'
 rootProject.name = "MSMI_Client"

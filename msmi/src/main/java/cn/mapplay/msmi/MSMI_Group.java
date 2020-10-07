@@ -1,4 +1,4 @@
-package cn.mapplay.msmi_client.msmi;
+package cn.mapplay.msmi;
 
 public class MSMI_Group {
     public String group_id;

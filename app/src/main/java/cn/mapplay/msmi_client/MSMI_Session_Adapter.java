@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
-import cn.mapplay.msmi_client.msmi.MSMI_Session;
+import cn.mapplay.msmi.MSMI_Session;
 
 public class MSMI_Session_Adapter extends CursorAdapter {
     private MSMI_Session session;

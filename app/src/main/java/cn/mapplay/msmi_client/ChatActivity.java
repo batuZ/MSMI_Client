@@ -16,8 +16,9 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import cn.mapplay.msmi_client.msmi.MSMI;
-import cn.mapplay.msmi_client.msmi.MSMI_Session;
+import cn.mapplay.msmi.MSMI;
+import cn.mapplay.msmi.MSMI_Session;
+
 
 public class ChatActivity extends AppCompatActivity {
     public final static int CHAT_FLAG = 1;

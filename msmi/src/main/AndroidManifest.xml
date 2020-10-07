@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="cn.mapplay.msmi">
+
+    <application>
+        <service android:name=".MSMI_Backservice" />
+        <receiver android:name=".MSMI_BroadcastReceiver" />
+    </application>
+</manifest>

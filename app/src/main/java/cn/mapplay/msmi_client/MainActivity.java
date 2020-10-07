@@ -10,9 +10,10 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import cn.mapplay.msmi_client.msmi.MSMI;
-import cn.mapplay.msmi_client.msmi.MSMI_Session;
-import cn.mapplay.msmi_client.msmi.MSMI_User;
+import cn.mapplay.msmi.MSMI;
+import cn.mapplay.msmi.MSMI_Config;
+import cn.mapplay.msmi.MSMI_Session;
+import cn.mapplay.msmi.MSMI_User;
 
 import static cn.mapplay.msmi_client.ChatActivity.CHAT_FLAG;
 
@@ -34,18 +35,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         groups.setOnClickListener(this);
         clear_btn.setOnClickListener(this);
 
-        // 登录后连接socket
-        MSMI_User.current_user = get_current_user();
-        if (MSMI_User.current_user.token != null) {
-            MSMI.setOnSessionChangedListener(new MSMI.OnSessionChangedListener() {
-                @Override
-                public void session_changed() {
-                    adapter.changeCursor(MSMI.session_list());
-                    adapter.notifyDataSetChanged();
-                }
-            });
-            MSMI.start_with_user(this, MSMI_User.current_user);
-        }
+
+        // ===================== 登录拿到chat_toekn后连接socket =====================
+        String chat_token = "eyJhbGciOiJIUzI1NiJ9.eyJpZGVudGlmaWVyIjoiTmlndWxhc2hfU2h1RmVuIiwibmFtZSI6IuWwvOWPpOaLieaWr8K35reR6IqsIiwiYXZhdGFyIjoiaHR0cHM6Ly9pbWFnZXMuMTIzMDYuY29tL2F2YXRhci9pbWdfOTk4My5qcGciLCJhcHBfaWQiOiJtYXBwbGF5In0.Sb9jexLCx90vCf4lDKb2_ZF4hoT9je89la_btMmi8Sw";
+
+        // id\name\avatar 由应用服务器维护
+        // chat_token是应用服务器向mi服务器发送请求创建的
+        // 请求：user --[get_token]--> appServer --[app_id,secrit_key,usr_id,name,avatar]--> miServer
+        // 返回: miServer --[token]--> appServer --[save & return]--> user
+        MSMI_User current_user = new MSMI_User(
+                "Nigulash_ShuFen",
+                "尼古拉斯·淑芬",
+                "https://images.12306.com/avatar/img_9983.jpg");
+        current_user.token = chat_token;
+
+        MSMI_Config config = new MSMI_Config();
+        config.host = "39.107.250.142";
+        config.port = 3000;
+        config.https = false;
+
+        MSMI.start_with_config(this, config, current_user, new MSMI.OnSessionChangedListener() {
+            @Override
+            public void session_changed() {
+                adapter.changeCursor(MSMI.session_list());
+                adapter.notifyDataSetChanged();
+            }
+        });
+
+        // ========================== OR =================================
+//            MSMI.start(
+//                    this,
+//                    "39.107.250.142",
+//                    3000,
+//                    true,
+//                    "eyJhbGciOiJIUzI1NiJ9.eyJpZGVudGlmaWVyIjoiTmlndWxhc2hfU2h1RmVuIiwibmFtZSI6IuWwvOWPpOaLieaWr8K35reR6IqsIiwiYXZhdGFyIjoiaHR0cHM6Ly9pbWFnZXMuMTIzMDYuY29tL2F2YXRhci9pbWdfOTk4My5qcGciLCJhcHBfaWQiOiJtYXBwbGF5In0.Sb9jexLCx90vCf4lDKb2_ZF4hoT9je89la_btMmi8Sw",
+//                    "Nigulash_ShuFen",
+//                    "尼古拉斯·淑芬",
+//                    "https://images.12306.com/avatar/img_9983.jpg",
+//                    new MSMI.OnSessionChangedListener() {
+//                        @Override
+//                        public void session_changed() {
+//                            adapter.changeCursor(MSMI.session_list());
+//                            adapter.notifyDataSetChanged();
+//                        }
+//                    }
+//            );
+
+        // ===========================================================
 
         // 把数库中的内容画在视图上
         listView = findViewById(R.id.listview);
@@ -81,20 +117,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 adapter.notifyDataSetChanged();
                 break;
         }
-    }
-
-    // 登录app-server，验证用户身份，获取用户信息
-    private MSMI_User get_current_user() {
-        // id\name\avatar 由应用服务器维护
-        // chat_token是应用服务器向mi服务器发送请求创建的
-        // 请求：user --[get_token]--> appServer --[app_id,secrit_key,usr_id,name,avatar]--> miServer
-        // 返回: miServer --[token]--> appServer --[save & return]--> user
-        MSMI_User current_user = new MSMI_User(
-                "Nigulash_ShuFen",
-                "尼古拉斯·淑芬",
-                "https://images.12306.com/avatar/img_9983.jpg");
-        current_user.token = "eyJhbGciOiJIUzI1NiJ9.eyJpZGVudGlmaWVyIjoiTmlndWxhc2hfU2h1RmVuIiwibmFtZSI6IuWwvOWPpOaLieaWr8K35reR6IqsIiwiYXZhdGFyIjoiaHR0cHM6Ly9pbWFnZXMuMTIzMDYuY29tL2F2YXRhci9pbWdfOTk4My5qcGciLCJhcHBfaWQiOiJtYXBwbGF5In0.Sb9jexLCx90vCf4lDKb2_ZF4hoT9je89la_btMmi8Sw";
-        return current_user;
     }
 
     // 从聊天退出来时，刷新一下session_list
