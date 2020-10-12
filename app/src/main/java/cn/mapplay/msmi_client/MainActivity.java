@@ -50,9 +50,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         current_user.token = chat_token;
 
         MSMI_Config config = new MSMI_Config();
-        config.host = "39.107.250.142";
-        config.port = 3000;
-        config.https = false;
+        config.host = "www.mapplay.cn";
+        config.port = 3334;
+        config.https = true;
 
         MSMI.start_with_config(this, config, current_user, new MSMI.OnSessionChangedListener() {
             @Override

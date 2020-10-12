@@ -63,7 +63,7 @@ public class MSMI_Backservice extends Service {
 
     private void initSocket() throws UnknownError, IOException {
         OkHttpClient client = new OkHttpClient.Builder().readTimeout(0, TimeUnit.MILLISECONDS).build();
-        Request request = new Request.Builder().header("msmi_token", token).url(MSMI_Server.WS).build();
+        Request request = new Request.Builder().header("msmi-token", token).url(MSMI_Server.WS).build();
         client.newWebSocket(request, new WebSocketListener() {
             @Override
             public void onOpen(WebSocket webSocket, Response response) {
@@ -150,7 +150,7 @@ public class MSMI_Backservice extends Service {
         Intent i_main = new Intent(MSMI.main_activity.getPackageName());
         PendingIntent pi = PendingIntent.getActivity(this, 0, i_main, 0);
         Notification notification = new NotificationCompat.Builder(this, "PUSH_CHANNEL_ID")
-                .setSmallIcon(R.mipmap.ic_launcher)
+//                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("收到新消息")
                 .setContentText(message.getString("content"))
                 .setDefaults(Notification.DEFAULT_SOUND)

@@ -14,6 +14,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -110,8 +111,8 @@ public class MSMI {
                     @Override
                     public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                         if (success(response)) {
-                            if (!response.message().equals("OK"))
-                                Toast.makeText(main_activity, response.message(), Toast.LENGTH_SHORT).show();
+                            if (!response.body().get("ms_message").equals("OK"))
+                                Toast.makeText(main_activity, response.body().get("ms_message").getAsString(), Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -124,8 +125,8 @@ public class MSMI {
                     @Override
                     public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                         if (success(response)) {
-                            if (!response.message().equals("OK"))
-                                Toast.makeText(main_activity, response.message(), Toast.LENGTH_SHORT).show();
+                            if (!response.body().get("ms_message").equals("OK"))
+                                Toast.makeText(main_activity, response.body().get("ms_message").getAsString(), Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -428,6 +429,18 @@ public class MSMI {
     public static Cursor session_list() {
         return MSMI_DB.helper(main_activity).getWritableDatabase()
                 .query(MSMI_DB.SESSION, null, null, null, null, null, "_update_time DESC");
+    }
+
+    public static List<MSMI_Session> session_list(int s) {
+        Cursor cursor = MSMI_DB.helper(main_activity).getWritableDatabase()
+                .query(MSMI_DB.SESSION, null, null, null, null, null, "_update_time DESC");
+        List<MSMI_Session> list = new ArrayList<>();
+        if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+            do {
+                list.add(new MSMI_Session(cursor));
+            } while (cursor.moveToNext());
+        }
+        return list;
     }
 
     // 获取指定session中的消息列表
