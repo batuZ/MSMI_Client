@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         config.port = 3334;
         config.https = true;
 
-        MSMI.start_with_config(this, config, current_user, new MSMI.OnSessionChangedListener() {
+        MSMI.start_with_config(this, config, current_user, R.mipmap.ic_launcher, new MSMI.OnSessionChangedListener() {
             @Override
             public void session_changed() {
                 adapter.changeCursor(MSMI.session_list());

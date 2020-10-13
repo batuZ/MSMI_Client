@@ -109,7 +109,7 @@ public class ChatActivity extends AppCompatActivity {
                 if (send_btn.getText().equals("+")) {
                     startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI), 123);
                 } else {
-                    MSMI.send_message(session, editText.getText().toString());
+                    MSMI.send_message(session, editText.getText().toString(),null,null,"text");
                     editText.setText(null);
                 }
             }

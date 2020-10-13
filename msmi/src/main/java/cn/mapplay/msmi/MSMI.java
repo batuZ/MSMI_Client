@@ -133,20 +133,18 @@ public class MSMI {
                 Log.i(TAG, "single: 插入失败");
             }
 
+            MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+            if (file_path != null && file_path.length() > 0) {
+                File file = new File(file_path);
+                if(file.exists()){
+                    RequestBody requestBody = RequestBody.create(MediaType.parse(content_type), file);
+                    builder.addFormDataPart("file", file.getName(), requestBody);
+                }
+            } else if (text != null) {
+                builder.addFormDataPart("content", text);
+            }
             // 消息发送请求
             if (session.session_type.equals(SINGLE)) {
-                MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
-
-                if (file_path != null && file_path.length() > 0) {
-                    File file = new File(file_path);
-                    if(file.exists()){
-                        RequestBody requestBody = RequestBody.create(MediaType.parse(content_type), file);
-                        builder.addFormDataPart("file", file.getName(), requestBody);
-                    }
-                } else if (text != null) {
-                    builder.addFormDataPart("content", text);
-                }
-
                 MSMI_Server.ser.single_message(MSMI_User.current_user.token, session.session_identifier, builder.build(), message.content_type).enqueue(new Callback<JsonObject>() {
                     @Override
                     public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
@@ -161,7 +159,7 @@ public class MSMI {
                     }
                 });
             } else {
-                MSMI_Server.ser.group_message(MSMI_User.current_user.token, session.session_identifier, text, message.content_type).enqueue(new Callback<JsonObject>() {
+                MSMI_Server.ser.group_message(MSMI_User.current_user.token, session.session_identifier, builder.build(), message.content_type).enqueue(new Callback<JsonObject>() {
                     @Override
                     public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                         if (success(response)) {
