@@ -18,11 +18,20 @@ public class MSMI_BroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String message = intent.getStringExtra("message");
         MSMI_Session session = new Gson().fromJson(message, MSMI_Session.class);
+        MSMI_Message msg = new Gson().fromJson(message, MSMI_Message.class);
+        if (msg.content_type.startsWith("image")) {
+            session.content = "[图片]";
+        } else if (msg.content_type.startsWith("image")) {
+            session.content = "[视频]";
+        } else if (msg.content_type.startsWith("audio")) {
+            session.content = "[音频]";
+        } else if (!msg.content_type.startsWith("text")) {
+            session.content = "[文件]";
+        }
         if (session.save(context)) {
-            MSMI_Message single = new Gson().fromJson(message, MSMI_Message.class);
-            single.session_id = session.id;
+            msg.session_id = session.id;
             // 插入新的消息
-            if (single.save(context)) {
+            if (msg.save(context)) {
                 if (MSMI.getOnMessageChangedListener() != null) {
                     MSMI.getOnMessageChangedListener().message_changed(session.session_identifier);
                 }

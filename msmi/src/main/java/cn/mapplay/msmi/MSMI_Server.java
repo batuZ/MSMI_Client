@@ -4,10 +4,12 @@ import com.google.gson.JsonObject;
 
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
@@ -33,11 +35,12 @@ public interface MSMI_Server {
 
     // 发送单聊消息
     @POST("message/single")
-    Call<JsonObject> single_message(@Header("msmi-token") String a, @Query("user_id") String b, @Query("content") String c);
+//    Call<JsonObject> single_message(@Header("msmi-token") String a, @Query("user_id") String b, @Query("content") String c, @Query("content_type") String d);
+    Call<JsonObject> single_message(@Header("msmi-token") String a, @Query("user_id") String b, @Body MultipartBody c, @Query("content_type") String d);
 
     // 发送群聊消息
     @POST("message/group")
-    Call<JsonObject> group_message(@Header("msmi-token") String a, @Query("group_id") String b, @Query("content") String c);
+    Call<JsonObject> group_message(@Header("msmi-token") String a, @Query("group_id") String b, @Query("content") String c, @Query("content_type") String d);
 
 
     // 获取好友列表

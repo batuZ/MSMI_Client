@@ -13,11 +13,15 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -59,7 +63,7 @@ public class MSMI {
         current_user.avatar = current_user_avatar;
         current_user.token = chat_token;
 
-        MSMI.start_with_config(mainActivity, config, current_user, app_icon , listener);
+        MSMI.start_with_config(mainActivity, config, current_user, app_icon, listener);
     }
 
     public static void start_with_config(
@@ -77,23 +81,45 @@ public class MSMI {
 
     // 补全链接
     public static String root_(String part) {
-        return MSMI_Server.API + "\\" + part;
+        return MSMI_Server.API + "/" + part;
     }
 
     // 发送消息
-    public static void send_message(MSMI_Session session, String text) {
-        // 更新session
+    public static void send_message(@NonNull MSMI_Session session, String text, String file_path, String file_preview, @NonNull String content_type) {
+        // 无效内容保护
+        if ((text == null || text.length() == 0) && (file_path == null || file_path.length() == 0)) {
+            Log.d(TAG, "send_message: 内容无效");
+            return;
+        }
         session.content = text;
         session.send_time = new Date().getTime();
         session.is_checked = true;
+        // 更新session
+        String c_type = content_type;
+        if (content_type.startsWith("image")) {
+            session.content = "[图片]";
+            c_type = "image";
+        } else if (content_type.startsWith("video")) {
+            session.content = "[视频]";
+            c_type = "video";
+        } else if (content_type.startsWith("audio")) {
+            session.content = "[音频]";
+            c_type = "audio";
+        } else if (!content_type.startsWith("text")) {
+            session.content = "[文件]";
+            c_type = "file";
+        }
 
         if (session.save(main_activity)) {
             // 创建一条single记录，塞到库里
             MSMI_Message message = new MSMI_Message(session.id);
             message.sender = MSMI_User.current_user;
             message.send_time = new Date().getTime();
-            message.content_type = "text";
+            message.content_type = c_type;
             message.content = text;
+            message.content_file = file_path;
+            message.content_preview = file_preview;
+
             // 发起回调，刷UI
             if (message.save(main_activity)) {
                 if (MSMI.getOnMessageChangedListener() != null) {
@@ -109,7 +135,19 @@ public class MSMI {
 
             // 消息发送请求
             if (session.session_type.equals(SINGLE)) {
-                MSMI_Server.ser.single_message(MSMI_User.current_user.token, session.session_identifier, text).enqueue(new Callback<JsonObject>() {
+                MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+
+                if (file_path != null && file_path.length() > 0) {
+                    File file = new File(file_path);
+                    if(file.exists()){
+                        RequestBody requestBody = RequestBody.create(MediaType.parse(content_type), file);
+                        builder.addFormDataPart("file", file.getName(), requestBody);
+                    }
+                } else if (text != null) {
+                    builder.addFormDataPart("content", text);
+                }
+
+                MSMI_Server.ser.single_message(MSMI_User.current_user.token, session.session_identifier, builder.build(), message.content_type).enqueue(new Callback<JsonObject>() {
                     @Override
                     public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                         if (success(response)) {
@@ -123,7 +161,7 @@ public class MSMI {
                     }
                 });
             } else {
-                MSMI_Server.ser.group_message(MSMI_User.current_user.token, session.session_identifier, text).enqueue(new Callback<JsonObject>() {
+                MSMI_Server.ser.group_message(MSMI_User.current_user.token, session.session_identifier, text, message.content_type).enqueue(new Callback<JsonObject>() {
                     @Override
                     public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                         if (success(response)) {
@@ -140,6 +178,7 @@ public class MSMI {
             }
         }
     }
+
 
     /**
      * 好友
