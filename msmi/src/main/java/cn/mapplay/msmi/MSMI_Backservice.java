@@ -39,6 +39,7 @@ public class MSMI_Backservice extends Service {
     private Handler handler = new Handler();
     private String token;
     private InitSocketThread socketThread;
+    private int icon;
 
     @Override
     public void onCreate() {
@@ -55,6 +56,7 @@ public class MSMI_Backservice extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         token = intent.getStringExtra("token");
+        icon = intent.getIntExtra("icon", 0);
         if (socketThread.getState() == Thread.State.NEW) {
             socketThread.start();
         }
@@ -150,7 +152,7 @@ public class MSMI_Backservice extends Service {
         Intent i_main = new Intent(MSMI.main_activity.getPackageName());
         PendingIntent pi = PendingIntent.getActivity(this, 0, i_main, 0);
         Notification notification = new NotificationCompat.Builder(this, "PUSH_CHANNEL_ID")
-//                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(icon)
                 .setContentTitle("收到新消息")
                 .setContentText(message.getString("content"))
                 .setDefaults(Notification.DEFAULT_SOUND)

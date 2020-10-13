@@ -23,17 +23,6 @@
         <activity android:name=".ChatActivity" />
         <activity android:name=".TagetsActivity" />
 
-<!--        <service android:name=".msmi.MSMI_Backservice" />-->
-
-<!--        <receiver-->
-<!--            android:name=".msmi.MSMI_BroadcastReceiver"-->
-<!--            android:enabled="true"-->
-<!--            android:exported="true">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="cn.mapplay.msmi_client.msmi.MSMI_BroadcastReceiver" />-->
-<!--            </intent-filter>-->
-<!--        </receiver>-->
-
     </application>
 
 </manifest>

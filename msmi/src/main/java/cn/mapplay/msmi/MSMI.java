@@ -45,6 +45,7 @@ public class MSMI {
             String current_user_identifier,
             String current_user_name,
             String current_user_avatar,
+            int app_icon,
             OnSessionChangedListener listener) {
 
         MSMI_Config config = new MSMI_Config();
@@ -58,19 +59,20 @@ public class MSMI {
         current_user.avatar = current_user_avatar;
         current_user.token = chat_token;
 
-        MSMI.start_with_config(mainActivity, config, current_user, listener);
+        MSMI.start_with_config(mainActivity, config, current_user, app_icon , listener);
     }
 
     public static void start_with_config(
             @NonNull Activity mainActivity,
             @NonNull MSMI_Config config,
             @NonNull MSMI_User current_user,
+            int app_icon,
             OnSessionChangedListener listener) {
         MSMI.main_activity = mainActivity;
         MSMI.config = config;
         MSMI.onSessionChangedListener = listener;
         MSMI_User.current_user = current_user;
-        mainActivity.startService(new Intent(mainActivity, MSMI_Backservice.class).putExtra("token", current_user.token));
+        mainActivity.startService(new Intent(mainActivity, MSMI_Backservice.class).putExtra("token", current_user.token).putExtra("icon", app_icon));
     }
 
     // 补全链接
