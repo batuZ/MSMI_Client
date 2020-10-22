@@ -37,9 +37,19 @@ public interface MSMI_Server {
     @POST("message/single")
     Call<JsonObject> single_message(@Header("msmi-token") String a, @Query("user_id") String b, @Body MultipartBody c, @Query("content_type") String d);
 
+    // 发送单聊消息
+    @POST("message/single_sts")
+    Call<JsonObject> single_sts(
+            @Header("msmi-token") String a,
+            @Query("user_id") String b,
+            @Query("content") String c,
+            @Query("file_name") String d,
+            @Query("content_type") String e,
+            @Query("information") String f);
+
     // 发送群聊消息
     @POST("message/group")
-    Call<JsonObject> group_message(@Header("msmi-token") String a, @Query("group_id") String b,@Body MultipartBody c, @Query("content_type") String d);
+    Call<JsonObject> group_message(@Header("msmi-token") String a, @Query("group_id") String b, @Body MultipartBody c, @Query("content_type") String d);
 
 
     // 获取好友列表

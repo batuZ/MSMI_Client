@@ -9,7 +9,18 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.alibaba.sdk.android.oss.ClientException;
+import com.alibaba.sdk.android.oss.OSS;
+import com.alibaba.sdk.android.oss.OSSClient;
+import com.alibaba.sdk.android.oss.ServiceException;
+import com.alibaba.sdk.android.oss.callback.OSSCompletedCallback;
+import com.alibaba.sdk.android.oss.common.auth.OSSCredentialProvider;
+import com.alibaba.sdk.android.oss.common.auth.OSSStsTokenCredentialProvider;
+import com.alibaba.sdk.android.oss.internal.OSSAsyncTask;
+import com.alibaba.sdk.android.oss.model.PutObjectRequest;
+import com.alibaba.sdk.android.oss.model.PutObjectResult;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
@@ -17,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.MediaType;
@@ -81,10 +93,10 @@ public class MSMI {
 
     // 补全链接
     public static String root_(String part) {
-        return MSMI_Server.API + "/" + part;
+        return MSMI_Server.API + part;
     }
 
-    // 发送消息
+    // 发送消息，带着附件，用于服务器直接管理附件的情况
     public static void send_message(@NonNull MSMI_Session session, String text, String file_path, String file_preview, @NonNull String content_type) {
         // 无效内容保护
         if ((text == null || text.length() == 0) && (file_path == null || file_path.length() == 0)) {
@@ -136,7 +148,7 @@ public class MSMI {
             MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
             if (file_path != null && file_path.length() > 0) {
                 File file = new File(file_path);
-                if(file.exists()){
+                if (file.exists()) {
                     RequestBody requestBody = RequestBody.create(MediaType.parse(content_type), file);
                     builder.addFormDataPart("file", file.getName(), requestBody);
                 }
@@ -156,6 +168,7 @@ public class MSMI {
 
                     @Override
                     public void onFailure(Call<JsonObject> call, Throwable t) {
+                        Log.i(TAG, "onFailure: asdf");
                     }
                 });
             } else {
@@ -170,13 +183,144 @@ public class MSMI {
 
                     @Override
                     public void onFailure(Call<JsonObject> call, Throwable t) {
-
                     }
                 });
             }
         }
     }
 
+    // 发送附件直传消息，服务器只管理权限，附件直传到oss上
+    public static void send_message_sts(
+            @NonNull MSMI_Session session,
+            final String text,
+            final String file_path,
+            final String file_preview,
+            final @NonNull String content_type,
+            final String information) {
+
+        // 无效内容保护
+        if ((text == null || text.length() == 0) && (file_path == null || file_path.length() == 0)) {
+            Log.d(TAG, "send_message: 内容无效");
+            return;
+        }
+        session.content = text;
+        session.send_time = new Date().getTime();
+        session.is_checked = true;
+        // 更新session
+        String c_type = content_type;
+        if (content_type.startsWith("image")) {
+            session.content = "[图片]";
+            c_type = "image";
+        } else if (content_type.startsWith("video")) {
+            session.content = "[视频]";
+            c_type = "video";
+        } else if (content_type.startsWith("audio")) {
+            session.content = "[音频]";
+            c_type = "audio";
+        } else if (!content_type.startsWith("text")) {
+            session.content = "[文件]";
+            c_type = "file";
+        }
+
+        if (session.save(main_activity)) {
+            // 创建一条single记录，塞到库里
+            MSMI_Message message = new MSMI_Message(session.id);
+            message.sender = MSMI_User.current_user;
+            message.send_time = new Date().getTime();
+            message.content_type = c_type;
+            message.content = text;
+            message.content_file = file_path;
+            message.content_preview = file_preview;
+            message.information = information;
+
+            // 发起回调，刷UI
+            if (message.save(main_activity)) {
+                if (MSMI.getOnMessageChangedListener() != null) {
+                    MSMI.getOnMessageChangedListener().message_changed(session.session_identifier);
+                }
+                if (MSMI.getOnSessionChangedListener() != null) {
+                    MSMI.getOnSessionChangedListener().session_changed();
+                }
+                Log.i(TAG, "single: 插入成功");
+            } else {
+                Log.i(TAG, "single: 插入失败");
+            }
+
+
+            // 消息发送请求
+            if (session.session_type.equals(SINGLE)) {
+                MSMI_Server.ser.single_sts(
+                        MSMI_User.current_user.token,
+                        session.session_identifier,
+                        text,
+                        file_path,
+                        message.content_type,
+                        information
+                ).enqueue(new Callback<JsonObject>() {
+                    @Override
+                    public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                        if (success(response)) {
+                            JsonObject body = response.body().get("ms_content").getAsJsonObject();
+                            if (body.size() > 0) {
+                                final String accessKeyId = body.get("access_key_id").getAsString();
+                                final String secretKeyId = body.get("access_key_secret").getAsString();
+                                final String SecurityToken = body.get("security_token").getAsString();
+                                final String endpoint = body.get("endpoint").getAsString();
+                                final String bucket = body.get("bucket").getAsString();
+                                final String file_name = body.get("file_name").getAsString();
+                                final String callback_api = body.get("callback_api").getAsString();
+                                final String callback_body = body.get("callback_body").getAsString();
+
+                                OSSCredentialProvider credentialProvider = new OSSStsTokenCredentialProvider(accessKeyId, secretKeyId, SecurityToken);
+                                OSS oss = new OSSClient(main_activity, endpoint, credentialProvider, null);
+                                // 构造上传请求。
+                                PutObjectRequest put = new PutObjectRequest(bucket, file_name, file_path);
+                                put.setCallbackParam(new HashMap<String, String>() {
+                                    {
+                                        put("callbackUrl", MSMI_Server.API + callback_api);
+                                        put("callbackBodyType", "application/json");
+                                        put("callbackBody", callback_body);
+                                    }
+                                });
+
+                                try {
+                                    PutObjectResult putResult = oss.putObject(put);
+                                    Log.d(TAG, "UploadSuccess");
+                                    Log.d(TAG, putResult.getETag());
+                                    Log.d(TAG, putResult.getRequestId());
+                                } catch (ClientException e) {
+                                    // 本地异常，如网络异常等。
+                                    e.printStackTrace();
+                                } catch (ServiceException e) {
+                                    // 服务异常。
+                                    Log.e(TAG, e.getRequestId());
+                                    Log.e(TAG, e.getErrorCode());
+                                    Log.e(TAG, e.getHostId());
+                                    Log.e(TAG, e.getRawMessage());
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<JsonObject> call, Throwable t) {
+                    }
+                });
+            } else {
+//                MSMI_Server.ser.group_message(MSMI_User.current_user.token, session.session_identifier, builder.build(), message.content_type).enqueue(new Callback<JsonObject>() {
+//                    @Override
+//                    public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+//                        if (success(response)) {
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Call<JsonObject> call, Throwable t) {
+//                    }
+//                });
+            }
+        }
+    }
 
     /**
      * 好友
@@ -483,9 +627,9 @@ public class MSMI {
     }
 
     // 获取指定session中的消息列表
-    public static Cursor single_list(String session_identifier) {
+    public static Cursor single_list(MSMI_Session session) {
         return MSMI_DB.helper(main_activity).getWritableDatabase()
-                .rawQuery("SELECT * FROM single INNER JOIN session WHERE session._identifier=? AND single._session_id = session._id ORDER BY single._send_time ASC;", new String[]{session_identifier});
+                .rawQuery("SELECT * FROM message INNER JOIN session WHERE session._identifier=? AND message._session_id = session._id ORDER BY message._send_time ASC;", new String[]{session.session_identifier});
     }
 
     // 清空session列表
@@ -497,7 +641,7 @@ public class MSMI {
     // 清空session中的single列表
     public static void clear_messages(String session_identifier) {
         MSMI_DB.helper(main_activity).getWritableDatabase()
-                .execSQL("DELETE FROM single WHERE _session_id IN (SELECT _id FROM session WHERE _identifier=?);", new String[]{session_identifier});
+                .execSQL("DELETE FROM message WHERE _session_id IN (SELECT _id FROM session WHERE _identifier=?);", new String[]{session_identifier});
         MSMI_DB.helper(main_activity).getWritableDatabase().close();
     }
 

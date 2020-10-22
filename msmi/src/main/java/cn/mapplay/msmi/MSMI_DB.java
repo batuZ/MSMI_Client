@@ -12,8 +12,7 @@ import androidx.annotation.Nullable;
 
 public class MSMI_DB extends SQLiteOpenHelper {
     public static String SESSION = "session";
-    public static String SINGLE = "single";
-    public static String NOTIFICATION = "notifiaction";
+    public static String MESSAGE = "message";
 
     // 创建版本，当前片本
     private static final int DB_VERSON = 2001;
@@ -44,7 +43,7 @@ public class MSMI_DB extends SQLiteOpenHelper {
         db.execSQL(sBuffer.toString());
 
         sBuffer = new StringBuffer();
-        sBuffer.append("create table " + SINGLE + "(_id integer primary key autoincrement, ");
+        sBuffer.append("create table " + MESSAGE + "(_id integer primary key autoincrement, ");
         sBuffer.append("_session_id integer,");
         sBuffer.append("_sender_id CHAR(64),");
         sBuffer.append("_sender_name NVARCHAR(128),");
@@ -54,6 +53,7 @@ public class MSMI_DB extends SQLiteOpenHelper {
         sBuffer.append("_content TEXT,");
         sBuffer.append("_file VARCHAR(256),");
         sBuffer.append("_preview VARCHAR(256),");
+        sBuffer.append("_information TEXT,");
         sBuffer.append("FOREIGN KEY (_session_id) REFERENCES " + SESSION + "(_id) ON DELETE CASCADE ON UPDATE CASCADE);");
         db.execSQL(sBuffer.toString());
     }
